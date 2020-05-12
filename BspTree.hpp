@@ -7,7 +7,6 @@
 //
 
 // TODO:
-// right/left terminology -> front/back?
 // add split function to Wall class so it can handle texture splitting, etc.
 // could even templatize on wall and point types (e.g. for expanding to real 3d)
 
@@ -55,8 +54,8 @@ private:
         void ExtendMapLineToSectionBounds(const std::vector<Line>& sectionBounds);
 
         Wall wall;
-        std::unique_ptr<BspNode> pLeftNode {nullptr};
-        std::unique_ptr<BspNode> pRightNode {nullptr};
+        std::unique_ptr<BspNode> pBackNode {nullptr};
+        std::unique_ptr<BspNode> pFrontNode {nullptr};
         BspNodeDebugInfo debugInfo;
         
         BspTree* pOwnerTree;
@@ -75,7 +74,7 @@ public:
 private:
     // for "compiling" tree
     std::unique_ptr<BspNode> CreateNode(const std::vector<Wall>& walls, const std::vector<Line>& sectionBounds);
-    static void SplitWalls(const Line& splitterLine, const std::vector<Wall>& walls, std::vector<Wall>& leftWalls, std::vector<Wall>& rightWalls);
+    static void SplitWalls(const Line& splitterLine, const std::vector<Wall>& walls, std::vector<Wall>& backWalls, std::vector<Wall>& frontWalls);
     static size_t FindBestSplitterWallIndex(const std::vector<Wall>& walls);
     
     RenderFuncType renderFunc;

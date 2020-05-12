@@ -10,6 +10,7 @@
 #include <vector>
 #include "BspTree.hpp"
 #include "Wall.hpp"
+#include "GeomUtils.hpp"
 
 void RenderWall(const Wall& wall)
 {
@@ -61,12 +62,14 @@ int main(int argc, const char * argv[])
 
     t.Print();
     
-    Vec2 p;
-    t.Find(p);
+    Vec2 c(50, 5);
+    t.Find(c);
     t.Render({0,0});
     
     t.DebugTraverse(DebugWall1);
     t.DebugTraverse(DebugWall2);
+    
+    std::cout << GeomUtils::IsPointInFrontOfLine(walls[8].seg, c) << std::endl;
     
     return 0;
 }

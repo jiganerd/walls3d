@@ -73,79 +73,80 @@ BspTree::BspNode::BspNode(BspTree* pOwnerTree, const Wall& wall, const std::vect
     sectionBoundsForChildren.push_back(wall.seg);
     
     // now do the split for realsies
-    vector<Wall> leftWalls, rightWalls;
-    BspTree::SplitWalls(wall.seg, surroundingWalls, leftWalls, rightWalls);
+    vector<Wall> backWalls, frontWalls;
+    BspTree::SplitWalls(wall.seg, surroundingWalls, backWalls, frontWalls);
     
-    // now process any/all walls that are on the left
-    if (leftWalls.size() > 0)
-        pLeftNode = pOwnerTree->CreateNode(leftWalls, sectionBoundsForChildren);
+    // now process any/all walls that are in back
+    if (backWalls.size() > 0)
+        pBackNode = pOwnerTree->CreateNode(backWalls, sectionBoundsForChildren);
     
-    // ... and any/all walls that are on the right
-    if (rightWalls.size() > 0)
-        pRightNode = pOwnerTree->CreateNode(rightWalls, sectionBoundsForChildren);
+    // ... and any/all walls that are in front
+    if (frontWalls.size() > 0)
+        pFrontNode = pOwnerTree->CreateNode(frontWalls, sectionBoundsForChildren);
 }
 
 void BspTree::BspNode::Print()
 {
     cout << "Node: " << GetIndex() << " ";
-    if (pLeftNode)
-        cout << "Left: " << pLeftNode->GetIndex() << " ";
-    if (pRightNode)
-        cout << "Right: " << pRightNode->GetIndex() << " ";
+    if (pBackNode)
+        cout << "Back: " << pBackNode->GetIndex() << " ";
+    if (pFrontNode)
+        cout << "Front: " << pFrontNode->GetIndex() << " ";
     cout << endl;
     
-    if (pLeftNode)
-        pLeftNode->Print();
-    if (pRightNode)
-        pRightNode->Print();
+    if (pBackNode)
+        pBackNode->Print();
+    if (pFrontNode)
+        pFrontNode->Print();
 }
 
 int32_t BspTree::BspNode::Find(const Vec2& p)
 {
-    if (GeomUtils::GeomUtils::IsPointToRightOfLine(wall.seg, p))
-        return (pRightNode ? pRightNode->Find(p) : -1);
+    if (GeomUtils::GeomUtils::IsPointInFrontOfLine(wall.seg, p))
+        return (pFrontNode ? pFrontNode->Find(p) : -1);
     else
-        return (pLeftNode ? pLeftNode->Find(p) : -1);
+        return (pBackNode ? pBackNode->Find(p) : -1);
 }
 
 void BspTree::BspNode::Render(const Vec2& cameraLoc, bool drawFrontToBack)
 {
     // if this is a leaf node, render this node's wall
-    if (!pLeftNode && !pRightNode)
+    if (!pBackNode && !pFrontNode)
     {
         pOwnerTree->renderFunc(wall);
     }
-    // if this is not a leaf, and the camera is on the right of this node's wall,
-    // render the nodes to the right
-    else if (GeomUtils::GeomUtils::IsPointToRightOfLine(wall.seg, cameraLoc))
+    // if this is not a leaf, and the camera is in front of this node's wall,
+    // render the nodes in front
+    // TODO: clean up logic / do culling here?
+    else if (GeomUtils::GeomUtils::IsPointInFrontOfLine(wall.seg, cameraLoc))
     {
         if (!drawFrontToBack)
         {
-            if (pLeftNode) pLeftNode->Render(cameraLoc, drawFrontToBack);
+            if (pBackNode) pBackNode->Render(cameraLoc, drawFrontToBack);
             pOwnerTree->renderFunc(wall);
-            if (pRightNode) pRightNode->Render(cameraLoc, drawFrontToBack);
+            if (pFrontNode) pFrontNode->Render(cameraLoc, drawFrontToBack);
         }
         else
         {
-            if (pRightNode) pRightNode->Render(cameraLoc, drawFrontToBack);
+            if (pFrontNode) pFrontNode->Render(cameraLoc, drawFrontToBack);
             pOwnerTree->renderFunc(wall);
-            if (pLeftNode) pLeftNode->Render(cameraLoc, drawFrontToBack);
+            if (pBackNode) pBackNode->Render(cameraLoc, drawFrontToBack);
         }
     }
-    // ... or the left
+    // ... or in back
     else
     {
         if (!drawFrontToBack)
         {
-            if (pRightNode) pRightNode->Render(cameraLoc, drawFrontToBack);
+            if (pFrontNode) pFrontNode->Render(cameraLoc, drawFrontToBack);
             pOwnerTree->renderFunc(wall);
-            if (pLeftNode) pLeftNode->Render(cameraLoc, drawFrontToBack);
+            if (pBackNode) pBackNode->Render(cameraLoc, drawFrontToBack);
         }
         else
         {
-            if (pLeftNode) pLeftNode->Render(cameraLoc, drawFrontToBack);
+            if (pBackNode) pBackNode->Render(cameraLoc, drawFrontToBack);
             pOwnerTree->renderFunc(wall);
-            if (pRightNode) pRightNode->Render(cameraLoc, drawFrontToBack);
+            if (pFrontNode) pFrontNode->Render(cameraLoc, drawFrontToBack);
         }
     }
     
@@ -154,9 +155,9 @@ void BspTree::BspNode::Render(const Vec2& cameraLoc, bool drawFrontToBack)
 
 void BspTree::BspNode::DebugTraverse(BspTree::DebugFuncType debugFunc)
 {
-    if (pLeftNode) pLeftNode->DebugTraverse(debugFunc);
+    if (pBackNode) pBackNode->DebugTraverse(debugFunc);
     debugFunc(wall, debugInfo);
-    if (pRightNode) pRightNode->DebugTraverse(debugFunc);
+    if (pFrontNode) pFrontNode->DebugTraverse(debugFunc);
 }
 
 BspTree::BspTree(const vector<Wall>& walls, const vector<Line>& sectionBounds, RenderFuncType renderFunc):
@@ -199,32 +200,31 @@ void BspTree::DebugTraverse(BspTree::DebugFuncType debugFunc)
         pRootNode->DebugTraverse(debugFunc);
 }
 
-void BspTree::SplitWalls(const Line& splitterLine, const vector<Wall>& walls, vector<Wall>& leftWalls, vector<Wall>& rightWalls)
+void BspTree::SplitWalls(const Line& splitterLine, const vector<Wall>& walls, vector<Wall>& backWalls, vector<Wall>& frontWalls)
 {
     // loop through all walls in the list, other than the splitter wall
     for (const Wall& wall : walls)
     {
-        // see if this wall is bisected by the line formed by nodePtr's wall
+        // see if this wall is bisected by the line formed by this node's wall
         Vec2 intersection;
         double t, u;
         if (GeomUtils::FindLineLineSegIntersection(splitterLine, wall.seg, intersection, t, u) == true)
         {
-            // split the wall at the intersection, and put the pieces of the
-            // the wall into the bsp tree
+            // split the wall at the intersection, and store the pieces
             
             // copy over most of the properties of the wall
             // into the two pieces
-            Wall leftWallPiece {wall};
-            Wall rightWallPiece {wall};
+            Wall backWallPiece {wall};
+            Wall frontWallPiece {wall};
             
-            bool addLeftWallPiece {false};
-            bool addRightWallPiece {false};
+            bool addBackWallPiece {false};
+            bool addFrontWallPiece {false};
             
             // modify the pieces to reflect the intersection point
-            // if we think of currNodePtr->wall.seg as a "directional ray"
-            // starting at currNodePtr->wall.seg.p1, then the sign of t represents
+            // if we think of splitterLine as a "directional ray"
+            // starting at splitterLine.p1, then the sign of t represents
             // whether the intersection happened in front of the ray or behind it
-            // break up wall into leftWallPiece and rightWallPiece accordingly
+            // break up wall into backWallPiece and frontWallPiece accordingly
             //
             // if u == 0, this means the line drawn by the current node's wall
             // touches exactly at the starting end of this wall
@@ -235,16 +235,16 @@ void BspTree::SplitWalls(const Line& splitterLine, const vector<Wall>& walls, ve
             if (u > 0 && u < 1)
             {
                 // the wall needs to be broken up into two
-                addLeftWallPiece = true;
-                addRightWallPiece = true;
+                addBackWallPiece = true;
+                addFrontWallPiece = true;
                 
-                if (GeomUtils::IsPointToRightOfLine(splitterLine, wall.seg.p1))
+                if (GeomUtils::IsPointInFrontOfLine(splitterLine, wall.seg.p1))
                 {
-                    rightWallPiece.seg.p2 = leftWallPiece.seg.p1 = intersection;
+                    frontWallPiece.seg.p2 = backWallPiece.seg.p1 = intersection;
                 }
                 else
                 {
-                    leftWallPiece.seg.p2 = rightWallPiece.seg.p1 = intersection;
+                    backWallPiece.seg.p2 = frontWallPiece.seg.p1 = intersection;
                 }
             }
             else
@@ -252,39 +252,39 @@ void BspTree::SplitWalls(const Line& splitterLine, const vector<Wall>& walls, ve
                 // the ray intersects the wall exactly at the wall start
                 if (u == 0)
                 {
-                    // the wall is entirely one side of the ray
+                    // the wall is entirely to one side of the ray
                     // do a test for where the *end* of the wall is
-                    if (GeomUtils::IsPointToRightOfLine(splitterLine, wall.seg.p2))
-                        addRightWallPiece = true;
+                    if (GeomUtils::IsPointInFrontOfLine(splitterLine, wall.seg.p2))
+                        addFrontWallPiece = true;
                     else
-                        addLeftWallPiece = true;
+                        addBackWallPiece = true;
                 }
                 // the ray intersects the wall exactly at the wall end
                 else // u == 1
                 {
-                    // the wall is entirely one side of the ray
+                    // the wall is entirely to one side of the ray
                     // do a test for where the *start* of the wall is
-                    if (GeomUtils::IsPointToRightOfLine(splitterLine, wall.seg.p1))
-                        addRightWallPiece = true;
+                    if (GeomUtils::IsPointInFrontOfLine(splitterLine, wall.seg.p1))
+                        addFrontWallPiece = true;
                     else
-                        addLeftWallPiece = true;
+                        addBackWallPiece = true;
                 }
             }
             
-            if (addLeftWallPiece)
-                leftWalls.push_back(leftWallPiece);
+            if (addBackWallPiece)
+                backWalls.push_back(backWallPiece);
             
-            if (addRightWallPiece)
-                rightWalls.push_back(rightWallPiece);
+            if (addFrontWallPiece)
+                frontWalls.push_back(frontWallPiece);
         }
         else
         {
             // if there's no intersection, this wall must lie entirely
             // on one side of the line or the other
-            if (GeomUtils::IsLineSegToRightOfLine(splitterLine, wall.seg))
-                rightWalls.push_back(wall);
+            if (GeomUtils::IsLineSegInFrontOfLine(splitterLine, wall.seg))
+                frontWalls.push_back(wall);
             else
-                leftWalls.push_back(wall);
+                backWalls.push_back(wall);
         }
     }
 }
@@ -292,27 +292,27 @@ void BspTree::SplitWalls(const Line& splitterLine, const vector<Wall>& walls, ve
 size_t BspTree::FindBestSplitterWallIndex(const vector<Wall>& walls)
 {
     vector<Wall> wallsWithoutSplitterWall;
-    vector<Wall> leftWalls, rightWalls;
+    vector<Wall> backWalls, frontWalls;
     size_t bestSplitterWallIndex {0};
     uint32_t bestSplitterWallScore {std::numeric_limits<uint32_t>::max()};
     
     for (size_t i = 0; i < walls.size(); i++)
     {
-        leftWalls.clear();
-        rightWalls.clear();
+        backWalls.clear();
+        frontWalls.clear();
         
         wallsWithoutSplitterWall = walls;
         wallsWithoutSplitterWall.erase(wallsWithoutSplitterWall.begin() + i);
         
-        SplitWalls(walls[i].seg, wallsWithoutSplitterWall, leftWalls, rightWalls);
+        SplitWalls(walls[i].seg, wallsWithoutSplitterWall, backWalls, frontWalls);
         
-        // see 1) how balanced the left/right sides are (good), and 2) how many
+        // see 1) how balanced the back/front sides are (good), and 2) how many
         // wall splits occurred (bad)
         // a lower "score" is better
         // we penalize much more harshly for number of splits than we reward for how balanced the tree is - this
         // ratio is something that is done "by feel"
-        uint32_t numberOfSplits {static_cast<uint32_t>((leftWalls.size() + rightWalls.size()) - wallsWithoutSplitterWall.size()) / 2};
-        uint32_t score {abs(static_cast<int32_t>(leftWalls.size()) - static_cast<int32_t>(rightWalls.size())) + numberOfSplits * 8};
+        uint32_t numberOfSplits {static_cast<uint32_t>((backWalls.size() + frontWalls.size()) - wallsWithoutSplitterWall.size()) / 2};
+        uint32_t score {abs(static_cast<int32_t>(backWalls.size()) - static_cast<int32_t>(frontWalls.size())) + numberOfSplits * 8};
         
         if (score < bestSplitterWallScore)
         {

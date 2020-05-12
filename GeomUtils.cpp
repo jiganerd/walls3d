@@ -8,14 +8,23 @@
 
 #include "GeomUtils.hpp"
 
-bool GeomUtils::IsPointToRightOfLine(const Line& l, const Vec2& p)
+// follows this convention:
+//
+//         * l.p2
+//        /|\
+/          |
+//    back | front
+//         |
+//         * l.p1
+//
+bool GeomUtils::IsPointInFrontOfLine(const Line& l, const Vec2& p)
 {
     return ((p - l.p1).cross(l.p2 - l.p1) < 0);
 }
 
-bool GeomUtils::IsLineSegToRightOfLine(const Line& line, const Line& lineSeg)
+bool GeomUtils::IsLineSegInFrontOfLine(const Line& line, const Line& lineSeg)
 {
-    return (IsPointToRightOfLine(line, lineSeg.p1) && IsPointToRightOfLine(line, lineSeg.p2));
+    return (IsPointInFrontOfLine(line, lineSeg.p1) && IsPointInFrontOfLine(line, lineSeg.p2));
 }
 
 bool GeomUtils::FindRayLineSegIntersection(const Line& ray, const Line& seg, Vec2& intersection, double& u)

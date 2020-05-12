@@ -18,8 +18,8 @@ public:
     GeomUtils() = delete;
     ~GeomUtils() = delete;
     
-    static bool IsPointToRightOfLine(const Line& l, const Vec2& p);
-    static bool IsLineSegToRightOfLine(const Line& line, const Line& lineSeg);
+    static bool IsPointInFrontOfLine(const Line& l, const Vec2& p);
+    static bool IsLineSegInFrontOfLine(const Line& line, const Line& lineSeg);
     
     static bool FindRayLineSegIntersection(const Line& ray, const Line& seg, Vec2& intersection, double& u);
     static bool FindLineLineSegIntersection(const Line& line, const Line& seg, Vec2& intersection, double& t, double& u);
