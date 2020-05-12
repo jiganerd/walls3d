@@ -139,13 +139,13 @@ void BspTree::BspNode::Render(const Vec2& cameraLoc, bool drawFrontToBack)
         if (!drawFrontToBack)
         {
             if (pFrontNode) pFrontNode->Render(cameraLoc, drawFrontToBack);
-            pOwnerTree->renderFunc(wall);
+            //pOwnerTree->renderFunc(wall); // cull here
             if (pBackNode) pBackNode->Render(cameraLoc, drawFrontToBack);
         }
         else
         {
             if (pBackNode) pBackNode->Render(cameraLoc, drawFrontToBack);
-            pOwnerTree->renderFunc(wall);
+            //pOwnerTree->renderFunc(wall); // cull here
             if (pFrontNode) pFrontNode->Render(cameraLoc, drawFrontToBack);
         }
     }

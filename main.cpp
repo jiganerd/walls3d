@@ -7,69 +7,17 @@
 //
 
 #include <iostream>
-#include <vector>
-#include "BspTree.hpp"
-#include "Wall.hpp"
-#include "GeomUtils.hpp"
-
-void RenderWall(const Wall& wall)
-{
-    std::cout << "rendering wall from "
-        << "{" << wall.seg.p1.x << ", " << wall.seg.p1.y << "}"
-        << " to "
-        << "{" << wall.seg.p2.x << ", " << wall.seg.p2.y << "}"
-        << std::endl;
-}
-
-void DebugWall1(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
-{
-    std::cout << "DebugWall1 debugging node " << debugInfo.nodeIndex << std::endl;
-}
-
-void DebugWall2(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
-{
-    std::cout << "DebugWall2 debugging node " << debugInfo.nodeIndex << std::endl;
-}
+#include "Game.hpp"
 
 int main(int argc, const char * argv[])
 {
-    const Vec2 worldMax{300, 300};
-
-    std::vector<Line> worldBounds =
+    Game g;
+    
+    bool quit = false;
+    while (!quit)
     {
-        { { 0 , 0 },{ worldMax.x, 0 } },
-        { { worldMax.x , 0 }, worldMax },
-        { worldMax, { 0, worldMax.y } },
-        { { 0, worldMax.y },{ 0, 0 } }
-    };
-
-    std::vector<Wall> walls = {
-        // world bounding box
-        { { {   0,   0 }, { 200,   0 } }, 10, {   0,   0, 255, 255 }, 2 },
-        { { { 200,   0 }, { 200, 200 } }, 10, {   0,   0, 255, 255 }, 2 },
-        { { { 200, 200 }, {   0, 200 } }, 10, {   0,   0, 255, 255 }, 2 },
-        { { {   0, 200 }, {   0,   0 } }, 10, {   0,   0, 255, 255 }, 2 },
-        // red wall
-        { { { 130, 160 }, { 180, 180 } }, 10, { 255,   0,   0, 255 }, 3 },
-        // purple/textured wall
-        { { {  10,  50 }, {  30,  80 } }, 10, { 255,   0, 255, 255 }, 1 },
-        { { {  30,  80 }, {  60,  60 } }, 10, { 255,   0, 255, 255 }, 1 },
-        { { {  60,  60 }, {  40,  30 } }, 10, { 255,   0, 255, 255 }, 1 },
-        { { {  40,  30 }, {  10,  50 } }, 10, { 255,   0, 255, 255 }, 1 },
-    };
-
-    BspTree t(walls, worldBounds, RenderWall);
-
-    t.Print();
-    
-    Vec2 c(50, 5);
-    t.Find(c);
-    t.Render({0,0});
-    
-    t.DebugTraverse(DebugWall1);
-    t.DebugTraverse(DebugWall2);
-    
-    std::cout << GeomUtils::IsPointInFrontOfLine(walls[8].seg, c) << std::endl;
+        quit = g.ProcessFrame();
+    }
     
     return 0;
 }

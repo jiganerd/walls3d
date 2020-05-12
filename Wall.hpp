@@ -12,21 +12,12 @@
 #include "Line.hpp"
 #include "Color.hpp"
 
-class OldColor
-{
-public:
-    unsigned char a;
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-};
-
 class Wall
 {
 public:
     Line seg;
     double height;
-    OldColor c;
+    Color c;
     int32_t textureNum;
 };
 
