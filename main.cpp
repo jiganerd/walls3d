@@ -20,6 +20,16 @@ void RenderWall(const Wall& wall)
         << std::endl;
 }
 
+void DebugWall1(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
+{
+    std::cout << "DebugWall1 debugging node " << debugInfo.nodeIndex << std::endl;
+}
+
+void DebugWall2(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
+{
+    std::cout << "DebugWall2 debugging node " << debugInfo.nodeIndex << std::endl;
+}
+
 int main(int argc, const char * argv[])
 {
     const Vec2 worldMax{300, 300};
@@ -48,11 +58,15 @@ int main(int argc, const char * argv[])
     };
 
     BspTree t(walls, worldBounds, RenderWall);
+
     t.Print();
     
     Vec2 p;
     t.Find(p);
     t.Render({0,0});
+    
+    t.DebugTraverse(DebugWall1);
+    t.DebugTraverse(DebugWall2);
     
     return 0;
 }

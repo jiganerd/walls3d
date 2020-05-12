@@ -17,23 +17,63 @@ using std::cout;
 using std::endl;
 using std::unique_ptr;
 
+BspTree::BspNodeDebugInfo::BspNodeDebugInfo(uint32_t nodeIndex):
+    nodeIndex(nodeIndex),
+    randomColorForMapDrawing{Color(64 + rand() % 192, rand() % 192, 64 + rand() % 192)}
+{
+}
+
+// the order of sectionBounds is important - will be traversed in reverse order for the
+// first (!) intersections
+void BspTree::BspNodeDebugInfo::ExtendMapLineToSectionBounds(const Line& line, const vector<Line>& sectionBounds)
+{
+    bool forwardIntersectionFound {false};
+    bool backwardIntersectionFound {false};
+    for (auto rit = sectionBounds.rbegin(); rit != sectionBounds.rend(); rit++)
+    {
+        const Line& bound {*rit};
+        
+        Vec2 intersection;
+        double t;
+        if (GeomUtils::FindRayLineIntersection(line, bound, intersection, t))
+        {
+            if (t > 0)
+            {
+                if (!forwardIntersectionFound)
+                {
+                    forwardIntersectionFound = true;
+                    extendedLineForMapDrawingForward = {line.p2, intersection};
+                }
+            }
+            else// if (t <= 0)
+            {
+                if (!backwardIntersectionFound)
+                {
+                    backwardIntersectionFound = true;
+                    extendedLineForMapDrawingBackward = {line.p1, intersection};
+                }
+            }
+            
+            if (forwardIntersectionFound && backwardIntersectionFound) break;
+        }
+    }
+}
+
 BspTree::BspNode::BspNode(BspTree* pOwnerTree, const Wall& wall, const std::vector<Wall>& surroundingWalls,
                           const std::vector<Line>& sectionBounds, uint32_t index):
     wall{wall},
     pOwnerTree{pOwnerTree},
-    index{index},
-    randomColorForMapDrawing{GenerateRandomColor()}
+    debugInfo{BspNodeDebugInfo(index)}
 {
-    // loop through all walls in the list and put them on the left or right of the node
-
-    vector<Wall> leftWalls, rightWalls;
+    // use the section boundaries for drawing/debugging the BSP tree on a map
+    debugInfo.ExtendMapLineToSectionBounds(wall.seg, sectionBounds);
     
-    ExtendMapLineToSectionBounds(sectionBounds);
-    
+    // append the current wall's line to the boundaries of the children nodes
     vector<Line> sectionBoundsForChildren = sectionBounds;
     sectionBoundsForChildren.push_back(wall.seg);
     
     // now do the split for realsies
+    vector<Wall> leftWalls, rightWalls;
     BspTree::SplitWalls(wall.seg, surroundingWalls, leftWalls, rightWalls);
     
     // now process any/all walls that are on the left
@@ -47,7 +87,7 @@ BspTree::BspNode::BspNode(BspTree* pOwnerTree, const Wall& wall, const std::vect
 
 void BspTree::BspNode::Print()
 {
-    cout << "Node: " << index << " ";
+    cout << "Node: " << GetIndex() << " ";
     if (pLeftNode)
         cout << "Left: " << pLeftNode->GetIndex() << " ";
     if (pRightNode)
@@ -66,49 +106,6 @@ int32_t BspTree::BspNode::Find(const Vec2& p)
         return (pRightNode ? pRightNode->Find(p) : -1);
     else
         return (pLeftNode ? pLeftNode->Find(p) : -1);
-}
-
-Color BspTree::BspNode::GenerateRandomColor()
-{
-    return Color(64 + rand() % 192, rand() % 192, 64 + rand() % 192);
-}
-
-// the order of sectionBounds is important - will be traversed in reverse order for the
-// first (!) intersections
-void BspTree::BspNode::ExtendMapLineToSectionBounds(const vector<Line>& sectionBounds)
-{
-    bool forwardIntersectionFound {false};
-    bool backwardIntersectionFound {false};
-    for (auto rit = sectionBounds.rbegin(); rit != sectionBounds.rend(); rit++)
-    {
-        const Line& l {*rit};
-        
-        Vec2 intersection;
-        double t;
-        if (GeomUtils::FindRayLineIntersection(wall.seg, l, intersection, t))
-        {
-            if (t > 0)
-            {
-                if (!forwardIntersectionFound)
-                {
-                    forwardIntersectionFound = true;
-                    extendedLineForMapDrawingForward.p1 = wall.seg.p2;
-                    extendedLineForMapDrawingForward.p2 = intersection;
-                }
-            }
-            else// if (t <= 0)
-            {
-                if (!backwardIntersectionFound)
-                {
-                    backwardIntersectionFound = true;
-                    extendedLineForMapDrawingBackward.p1 = wall.seg.p1;
-                    extendedLineForMapDrawingBackward.p2 = intersection;
-                }
-            }
-            
-            if (forwardIntersectionFound && backwardIntersectionFound) break;
-        }
-    }
 }
 
 void BspTree::BspNode::Render(const Vec2& cameraLoc, bool drawFrontToBack)
@@ -155,7 +152,14 @@ void BspTree::BspNode::Render(const Vec2& cameraLoc, bool drawFrontToBack)
     // TODO: handle if camera is exactly on this node's line
 }
 
-BspTree::BspTree(const vector<Wall>& walls, const vector<Line>& sectionBounds, std::function<void(const Wall&)> renderFunc):
+void BspTree::BspNode::DebugTraverse(BspTree::DebugFuncType debugFunc)
+{
+    if (pLeftNode) pLeftNode->DebugTraverse(debugFunc);
+    debugFunc(wall, debugInfo);
+    if (pRightNode) pRightNode->DebugTraverse(debugFunc);
+}
+
+BspTree::BspTree(const vector<Wall>& walls, const vector<Line>& sectionBounds, RenderFuncType renderFunc):
     renderFunc{renderFunc},
     pRootNode{CreateNode(walls, sectionBounds)}
 {
@@ -187,6 +191,12 @@ void BspTree::Render(const Vec2& cameraLoc, bool drawFrontToBack)
 {
     if (pRootNode)
         pRootNode->Render(cameraLoc, drawFrontToBack);
+}
+
+void BspTree::DebugTraverse(BspTree::DebugFuncType debugFunc)
+{
+    if (pRootNode)
+        pRootNode->DebugTraverse(debugFunc);
 }
 
 void BspTree::SplitWalls(const Line& splitterLine, const vector<Wall>& walls, vector<Wall>& leftWalls, vector<Wall>& rightWalls)
