@@ -6,6 +6,7 @@
 //  Copyright © 2020 Brian Dolan. All rights reserved.
 //
 
+#include <cmath>
 #include "Camera.hpp"
 
 Camera::Camera(const Vec2& location):
@@ -25,8 +26,9 @@ Camera::Camera(const Vec2& location):
 
 void Camera::rotate(double angleRad)
 {
-    dir *= Mat2::Rot(angleRad);
-    halfViewPlane *= Mat2::Rot(angleRad);
+    Mat2 rotMat {Mat2::Rot(angleRad)};
+    dir *= rotMat;
+    halfViewPlane *= rotMat;
     updateNormalizedVectors();
     updateViewPlaneVectors();
 };

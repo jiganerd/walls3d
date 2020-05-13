@@ -108,49 +108,35 @@ int32_t BspTree::BspNode::Find(const Vec2& p)
         return (pBackNode ? pBackNode->Find(p) : -1);
 }
 
-void BspTree::BspNode::Render(const Vec2& cameraLoc, bool drawFrontToBack)
+// this renders *front to back* (closest walls first), and also performs backface culling
+// (walls facing away from the camera are not rendered)
+void BspTree::BspNode::Render(const Vec2& cameraLoc)
 {
-    // if this is a leaf node, render this node's wall
-    if (!pBackNode && !pFrontNode)
+    // if the camera is in front of this node's wall
+    if (GeomUtils::GeomUtils::IsPointInFrontOfLine(wall.seg, cameraLoc))
     {
+        // render the nodes in front of this one, then this one, then the ones behind
+        // (front to back)
+        
+        if (pFrontNode) pFrontNode->Render(cameraLoc);
         pOwnerTree->renderFunc(wall);
-    }
-    // if this is not a leaf, and the camera is in front of this node's wall,
-    // render the nodes in front
-    // TODO: clean up logic / do culling here?
-    else if (GeomUtils::GeomUtils::IsPointInFrontOfLine(wall.seg, cameraLoc))
-    {
-        if (!drawFrontToBack)
-        {
-            if (pBackNode) pBackNode->Render(cameraLoc, drawFrontToBack);
-            pOwnerTree->renderFunc(wall);
-            if (pFrontNode) pFrontNode->Render(cameraLoc, drawFrontToBack);
-        }
-        else
-        {
-            if (pFrontNode) pFrontNode->Render(cameraLoc, drawFrontToBack);
-            pOwnerTree->renderFunc(wall);
-            if (pBackNode) pBackNode->Render(cameraLoc, drawFrontToBack);
-        }
+        if (pBackNode) pBackNode->Render(cameraLoc);
     }
     // ... or in back
     else
     {
-        if (!drawFrontToBack)
-        {
-            if (pFrontNode) pFrontNode->Render(cameraLoc, drawFrontToBack);
-            //pOwnerTree->renderFunc(wall); // cull here
-            if (pBackNode) pBackNode->Render(cameraLoc, drawFrontToBack);
-        }
-        else
-        {
-            if (pBackNode) pBackNode->Render(cameraLoc, drawFrontToBack);
-            //pOwnerTree->renderFunc(wall); // cull here
-            if (pFrontNode) pFrontNode->Render(cameraLoc, drawFrontToBack);
-        }
+        // don't render the current node's wall, since it is not facing the right direction,
+        // but do potentially render its children
+        // since this wall is facing away from the camera, we render the ones in back of it
+        // (closer to the camera) before the ones in front of it (farther from the camera)
+
+        if (pBackNode) pBackNode->Render(cameraLoc);
+        if (pFrontNode) pFrontNode->Render(cameraLoc);
     }
     
     // TODO: handle if camera is exactly on this node's line
+    // wikipedia: If that polygon lies in the plane containing P, add it to the *list of polygons* at node N.
+    // (I currenly don't have this set up as a list...)
 }
 
 void BspTree::BspNode::DebugTraverse(BspTree::DebugFuncType debugFunc)
@@ -188,10 +174,10 @@ int32_t BspTree::Find(const Vec2& p)
     return (pRootNode ? pRootNode->Find(p) : -1);
 }
 
-void BspTree::Render(const Vec2& cameraLoc, bool drawFrontToBack)
+void BspTree::Render(const Vec2& cameraLoc)
 {
     if (pRootNode)
-        pRootNode->Render(cameraLoc, drawFrontToBack);
+        pRootNode->Render(cameraLoc);
 }
 
 void BspTree::DebugTraverse(BspTree::DebugFuncType debugFunc)

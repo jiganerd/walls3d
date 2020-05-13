@@ -47,7 +47,7 @@ private:
         int GetIndex() { return debugInfo.nodeIndex; }
         void Print();
         int32_t Find(const Vec2& p);
-        void Render(const Vec2& cameraLoc, bool drawFrontToBack);
+        void Render(const Vec2& cameraLoc);
         void DebugTraverse(DebugFuncType debugFunc);
 
     private:
@@ -67,7 +67,7 @@ public:
     
     void Print();
     int32_t Find(const Vec2& p);
-    void Render(const Vec2& cameraLoc, bool drawFrontToBack = true);
+    void Render(const Vec2& cameraLoc);
     
     void DebugTraverse(DebugFuncType debugFunc);
     

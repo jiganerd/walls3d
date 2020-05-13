@@ -44,6 +44,18 @@ bool GeomUtils::FindRayLineIntersection(const Line& ray, const Line& line, Vec2&
     return FindRayLineSegIntersection(true, false, ray, line, intersection, t, dummy);
 }
 
+double GeomUtils::AngleBetween(const Vec2& v1, const Vec2& v2)
+{
+    return acos((v1 * v2) / (v1.Mag() * v2.Mag()));
+    //	return asin(v1.cross(v2) / (v1.Mag() * v2.Mag()));
+}
+
+// a faster version of angleBetweenVectors, if the vectors have already been normalized
+double GeomUtils::AngleBetweenNorm(const Vec2& v1, const Vec2& v2)
+{
+    return acos(v1 * v2);
+}
+
 // finds the point of intersection of a ray (line w/ starting point and no end), starting
 // at ray.p1, and a line segment (line with both starting point and ending point
 //

@@ -33,8 +33,6 @@ private:
     uint32_t getScreenXFromAngle(double angle);
     bool isOnScreen(uint32_t screenX);
     int32_t unsignedSub(uint32_t n1, uint32_t n2);
-    double angleBetweenVectors(const Vec2& v1, const Vec2& v2);
-    double angleBetweenNormalizedVectors(const Vec2& v1, const Vec2& v2);
     
     uint32_t RenderColumn(uint32_t screenX, uint32_t height, Color c, uint32_t textureNum, double textureXPercentage);
     
@@ -42,7 +40,6 @@ private:
     const Camera& camera;
     
     bool affineTextureMapping {false};
-    bool backfaceCulling {false};
     bool brightnessAdjustment {true};
     
     const uint32_t HalfScreenWidth;

@@ -6,6 +6,7 @@
 //  Copyright © 2020 Brian Dolan. All rights reserved.
 //
 
+#include <cmath>
 #include "Renderer.hpp"
 #include "GeomUtils.hpp"
 
@@ -114,7 +115,7 @@ void Renderer::RenderWall(const Wall &wall)
     {
         // potentially swap things around so that p1 is always to the left of p2,
         // so that we can draw left to right
-        if ((screenXP2 < screenXP1) && !backfaceCulling)
+        if (screenXP2 < screenXP1)
         {
             std::swap(distP1, distP2);
             std::swap(screenXP1, screenXP2);
@@ -122,71 +123,65 @@ void Renderer::RenderWall(const Wall &wall)
             std::swap(textureXPercentageP1, textureXPercentageP2);
         }
         
-        // if doing backface culling and this wall is facing the wrong way, don't draw it
-        if (screenXP1 <= screenXP2)
+        double columnHeight = columnHeightP1;
+        uint32_t screenXDifference = screenXP2 - screenXP1;
+        double columnHeightIncrement = static_cast<double>(unsignedSub(columnHeightP2, columnHeightP1) / static_cast<double>(screenXDifference));
+        
+        // (U/Z) / (1/Z) = U/Z * Z = U
+        // (U/Z) and (1/Z) can increment linearly as we go across screen X coordinates
+        
+        // distance does not increment linearly!
+        // but 1/distance does!
+        // (1/Z)
+        const double inverseDistStart = 1.0 / distP1;
+        const double inverseDistEnd = 1.0 / distP2;
+        const double inverseDistIncrement = (inverseDistEnd - inverseDistStart) / static_cast<double>(screenXDifference);
+        double inverseDist = inverseDistStart;
+        
+        // (U/Z)
+        const double textureXPercentageOverDistStart = textureXPercentageP1 / distP1;
+        const double textureXPercentageOverDistEnd = textureXPercentageP2 / distP2;
+        const double textureXPercentageOverDistIncrement = (textureXPercentageOverDistEnd - textureXPercentageOverDistStart) / static_cast<double>(screenXDifference);
+        double textureXPercentageOverDist = textureXPercentageOverDistStart;
+        
+        // this stuff is for affine texture mapping (bad) only
+        double textureXPercentage = 0;
+        double textureXPercentageIncrement = 0;
+        if ((wall.textureNum != -1) && affineTextureMapping)
         {
-            double columnHeight = columnHeightP1;
-            uint32_t screenXDifference = screenXP2 - screenXP1;
-            double columnHeightIncrement = static_cast<double>(unsignedSub(columnHeightP2, columnHeightP1) / static_cast<double>(screenXDifference));
-            
-            // (U/Z) / (1/Z) = U/Z * Z = U
-            // (U/Z) and (1/Z) can increment linearly as we go across screen X coordinates
-            
-            // distance does not increment linearly!
-            // but 1/distance does!
-            // (1/Z)
-            const double inverseDistStart = 1.0 / distP1;
-            const double inverseDistEnd = 1.0 / distP2;
-            const double inverseDistIncrement = (inverseDistEnd - inverseDistStart) / static_cast<double>(screenXDifference);
-            double inverseDist = inverseDistStart;
-            
-            // (U/Z)
-            const double textureXPercentageOverDistStart = textureXPercentageP1 / distP1;
-            const double textureXPercentageOverDistEnd = textureXPercentageP2 / distP2;
-            const double textureXPercentageOverDistIncrement = (textureXPercentageOverDistEnd - textureXPercentageOverDistStart) / static_cast<double>(screenXDifference);
-            double textureXPercentageOverDist = textureXPercentageOverDistStart;
-            
-            // this stuff is for affine texture mapping (bad) only
-            double textureXPercentage = 0;
-            double textureXPercentageIncrement = 0;
-            if ((wall.textureNum != -1) && affineTextureMapping)
+            textureXPercentage = textureXPercentageP1;
+            textureXPercentageIncrement = (textureXPercentageP2 - textureXPercentageP1) / static_cast<double>(screenXDifference);
+        }
+        
+        // TODO: textureXPercentage can't increase linearly as we go from left to right across the screen
+        // it's not that simple... this works only if the wall is facing the camera "head on"
+        
+        for (uint32_t screenX = screenXP1; screenX </*=?*/ screenXP2; screenX++)
+        {
+            if (!affineTextureMapping)
             {
-                textureXPercentage = textureXPercentageP1;
-                textureXPercentageIncrement = (textureXPercentageP2 - textureXPercentageP1) / static_cast<double>(screenXDifference);
+                // accurate, but division in loop
+                // U = U/Z * Z = (U/Z) / (1/Z) 
+                textureXPercentage = textureXPercentageOverDist / inverseDist;
             }
             
-            // TODO: textureXPercentage can't increase linearly as we go from left to right across the screen
-            // it's not that simple... this works only if the wall is facing the camera "head on"
+            RenderColumn(screenX, static_cast<uint32_t>(columnHeight + 0.5), wall.c, wall.textureNum, textureXPercentage);
             
-            for (uint32_t screenX = screenXP1; screenX </*=?*/ screenXP2; screenX++)
+            columnHeight += columnHeightIncrement;
+            
+            if (affineTextureMapping)
             {
-                if (!affineTextureMapping)
-                {
-                    // accurate, but division in loop
-                    // U = U/Z * Z = (U/Z) / (1/Z) 
-                    textureXPercentage = textureXPercentageOverDist / inverseDist;
-                }
-                
-                RenderColumn(screenX, static_cast<uint32_t>(columnHeight + 0.5), wall.c, wall.textureNum, textureXPercentage);
-                
-                columnHeight += columnHeightIncrement;
-                
-                if (affineTextureMapping)
-                {
-                    // inaccurate, but quick (simple addition)
-                    textureXPercentage += textureXPercentageIncrement;
-                }
-                else
-                {
-                    textureXPercentageOverDist += textureXPercentageOverDistIncrement;
-                    inverseDist += inverseDistIncrement;
-                }
+                // inaccurate, but quick (simple addition)
+                textureXPercentage += textureXPercentageIncrement;
+            }
+            else
+            {
+                textureXPercentageOverDist += textureXPercentageOverDistIncrement;
+                inverseDist += inverseDistIncrement;
             }
         }
     }
 }
-
-#include <cmath>
 
 uint32_t Renderer::getColumnHeightByDistance(double dist, double height)
 {
@@ -216,7 +211,7 @@ double Renderer::getPerpendicularDistanceFromCameraByAngle(const Vec2& point, do
 double Renderer::getAngleFromCamera(const Vec2& location)
 {
     Vec2 diffVectN = (location - camera.location).Norm();
-    double absAngleFromCameraDir = angleBetweenNormalizedVectors(camera.dirN, diffVectN);
+    double absAngleFromCameraDir = GeomUtils::AngleBetweenNorm(camera.dirN, diffVectN);
     
     // we need to do the cross product in order to tell if this angle
     // is to the left of or the right of the camera's direction
@@ -245,18 +240,6 @@ bool Renderer::isOnScreen(uint32_t screenX)
 int32_t Renderer::unsignedSub(uint32_t n1, uint32_t n2)
 {
     return (static_cast<int32_t>(n1) - static_cast<int32_t>(n2));
-}
-
-double Renderer::angleBetweenVectors(const Vec2& v1, const Vec2& v2)
-{
-    return acos((v1 * v2) / (v1.Mag() * v2.Mag()));
-    //	return asin(v1.cross(v2) / (v1.Mag() * v2.Mag()));
-}
-
-// a faster version of angleBetweenVectors, if the vectors have already been normalized
-double Renderer::angleBetweenNormalizedVectors(const Vec2& v1, const Vec2& v2)
-{
-    return acos(v1 * v2);
 }
 
 uint32_t Renderer::RenderColumn(uint32_t screenX, uint32_t height, Color c, uint32_t textureNum, double textureXPercentage)

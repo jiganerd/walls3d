@@ -9,7 +9,6 @@
 #ifndef Camera_hpp
 #define Camera_hpp
 
-#include <cmath>
 #include "Vec2.hpp"
 #include "Mat2.hpp"
 
