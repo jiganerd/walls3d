@@ -30,7 +30,7 @@ public:
     Graphics& operator=(const Graphics&) = delete;
     void BeginFrame();
     void EndFrame();
-    static Surface LoadTexture(std::string filename);
+    static Surface LoadTexture(std::string filename, bool sideways = false);
     void PutPixel(int x, int y, int r, int g, int b);
     void PutPixel(int x, int y, const Color& c);
     // these follow triangle rasterization rules described at
@@ -60,8 +60,8 @@ private:
     Surface screen;
     
 public:
-    static constexpr unsigned int ScreenWidth = 640u;
-    static constexpr unsigned int ScreenHeight = 480u;
+    static constexpr unsigned int ScreenWidth = 800u;
+    static constexpr unsigned int ScreenHeight = 600u;
 };
 
 #endif /* Graphics_hpp */

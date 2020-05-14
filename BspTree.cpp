@@ -7,7 +7,6 @@
 //
 
 #include <iostream>
-#include <random>
 #include <cmath>
 #include "BspTree.hpp"
 #include "GeomUtils.hpp"
@@ -17,9 +16,21 @@ using std::cout;
 using std::endl;
 using std::unique_ptr;
 
+// bright colors that show up well on the map
+const vector<Color> BspTree::mapColors
+{
+    Colors::White,
+    Colors::Red,
+    Colors::Lime,
+    Colors::Blue,
+    Colors::Yellow,
+    Colors::Cyan,
+    Colors::Magenta
+};
+
 BspTree::BspNodeDebugInfo::BspNodeDebugInfo(uint32_t nodeIndex):
     nodeIndex(nodeIndex),
-    randomColorForMapDrawing{Color(64 + rand() % 192, rand() % 192, 64 + rand() % 192)}
+    mapColor(BspTree::mapColors[nodeIndex % BspTree::mapColors.size()])
 {
 }
 

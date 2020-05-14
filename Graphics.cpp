@@ -63,7 +63,7 @@ void Graphics::EndFrame()
     SDL_RenderPresent(pRenderer);
 }
 
-Surface Graphics::LoadTexture(std::string filename)
+Surface Graphics::LoadTexture(std::string filename, bool sideways)
 {
     SDL_Surface* pSurf = SDL_LoadBMP(filename.c_str());
     if (!pSurf)
@@ -79,7 +79,7 @@ Surface Graphics::LoadTexture(std::string filename)
     {
         for (int x = 0; x < pSurf->w; x++)
         {
-            pPixelBuffer[offset++] = GetSDLSurfaceColor(*pSurf, x, y);
+            pPixelBuffer[offset++] = GetSDLSurfaceColor(*pSurf, (sideways ? y : x), (sideways ? x : y));
         }
     }
     

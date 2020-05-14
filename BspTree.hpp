@@ -28,9 +28,9 @@ public:
         void ExtendMapLineToSectionBounds(const Line& line, const std::vector<Line>& sectionBounds);
         
         uint32_t nodeIndex;
-        Color randomColorForMapDrawing;
+        Color mapColor;
         Line extendedLineForMapDrawingForward;
-        Line extendedLineForMapDrawingBackward;        
+        Line extendedLineForMapDrawingBackward;
     };
 
     using RenderFuncType = std::function<void(const Wall&)>;
@@ -80,6 +80,8 @@ private:
     RenderFuncType renderFunc;
     std::unique_ptr<BspNode> pRootNode {nullptr};
     int32_t numNodes {0};
+    
+    static const std::vector<Color> mapColors;
 };
 
 #endif /* BspTree_hpp */

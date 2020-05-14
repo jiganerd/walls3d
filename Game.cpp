@@ -38,6 +38,14 @@ Game::Game():
     r(g, camera),
     bspTree{walls, worldBounds, std::bind(&Renderer::RenderWall, &r, std::placeholders::_1)}
 {
+    r.BindTexture(Graphics::LoadTexture("brick.bmp", true));
+    r.BindTexture(Graphics::LoadTexture("brick_markedup.bmp", true));
+    r.BindTexture(Graphics::LoadTexture("stripes.bmp", true));
+    
+    Surface xorSurface(256, 256);
+    xorSurface.FillXorPattern();
+    r.BindTexture(std::move(xorSurface));
+
     bspTree.Print();
 }
 
@@ -99,7 +107,7 @@ void Game::DrawMapBsp1(const Wall& wall, const BspTree::BspNodeDebugInfo& debugI
 
 void Game::DrawMapBsp2(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
 {
-    DrawMapLine(wall.seg, debugInfo.randomColorForMapDrawing);
+    DrawMapLine(wall.seg, debugInfo.mapColor);
 }
 
 void Game::DrawMapLine(const Line& line, const Color&c)
