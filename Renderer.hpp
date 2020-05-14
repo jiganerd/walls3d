@@ -16,12 +16,10 @@
 class Renderer
 {
 public:
-    Renderer(Graphics& g, const Camera& camera):
-        g{g},
-        camera{camera},
-        HalfScreenWidth{g.ScreenWidth/2},
-        HalfScreenHeight{g.ScreenHeight/2}
-    {}
+    Renderer(Graphics& g, const Camera& camera);
+    ~Renderer() = default;
+    
+    void BeginRender();
     void RenderWall(const Wall& wall);
     
 private:
@@ -31,16 +29,19 @@ private:
     double getPerpendicularDistanceFromCameraByAngle(const Vec2& point, double angleFromCamera);
     double getAngleFromCamera(const Vec2& location);
     uint32_t getScreenXFromAngle(double angle);
-    bool isOnScreen(uint32_t screenX);
     int32_t unsignedSub(uint32_t n1, uint32_t n2);
-    
     uint32_t RenderColumn(uint32_t screenX, uint32_t height, Color c, uint32_t textureNum, double textureXPercentage);
+    bool ClipAndGetAttributes(bool leftSide, const Line& wallSeg, uint32_t& screenX, double& dist, double& textureXPercentage);
     
     Graphics& g;
     const Camera& camera;
     
     bool affineTextureMapping {false};
     bool brightnessAdjustment {true};
+    
+    // this is a simplification of a "z buffer" - currently, we don't care about
+    // z-depth per column - we only care about whether or not a column was drawn
+    std::unique_ptr<bool[]> pDrawnBuffer;
     
     const uint32_t HalfScreenWidth;
     const uint32_t HalfScreenHeight;

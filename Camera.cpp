@@ -8,6 +8,9 @@
 
 #include <cmath>
 #include "Camera.hpp"
+#include "Mat2.hpp"
+#include "Utils.hpp"
+#include "GeomUtils.hpp"
 
 Camera::Camera(const Vec2& location):
     location{location}
@@ -43,6 +46,16 @@ void Camera::strafe(double distanceToRight)
 {
     location += (halfViewPlaneN * distanceToRight);
     updateViewPlaneVectors();
+}
+
+bool Camera::IsBehind(const Vec2 &p) const
+{
+    return GeomUtils::IsPointInFrontOfLine({location, location + halfViewPlane}, p);
+}
+
+bool Camera::IsBehind(const Line &l) const
+{
+    return (IsBehind(l.p1) && IsBehind(l.p2));
 }
 
 void Camera::updateNormalizedVectors()

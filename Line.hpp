@@ -14,6 +14,25 @@
 class Line
 {
 public:
+    Line operator+(const Vec2& rhs) const
+    {
+        return {p1 + rhs, p2 + rhs};
+    }
+    Line& operator+=(const Vec2& rhs)
+    {
+        *this = *this + rhs;
+        return *this;
+    }
+    Line operator-(const Vec2& rhs) const
+    {
+        return {p1 - rhs, p2 - rhs};
+    }
+    Line& operator-=(const Vec2& rhs)
+    {
+        *this = *this - rhs;
+        return *this;
+    }
+    
     Vec2 p1;
     Vec2 p2;
 };

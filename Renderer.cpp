@@ -7,179 +7,118 @@
 //
 
 #include <cmath>
+#include <cassert>
+#include <string.h>
 #include "Renderer.hpp"
 #include "GeomUtils.hpp"
+#include "Utils.hpp"
+
+Renderer::Renderer(Graphics& g, const Camera& camera):
+    g{g},
+    camera{camera},
+    HalfScreenWidth{g.ScreenWidth/2},
+    HalfScreenHeight{g.ScreenHeight/2},
+    pDrawnBuffer{new bool[Graphics::ScreenWidth]}
+{
+}
+
+void Renderer::BeginRender()
+{
+    memset(pDrawnBuffer.get(), 0, Graphics::ScreenWidth * sizeof(bool));
+}
 
 void Renderer::RenderWall(const Wall &wall)
 {
-    // I'm going to guess that this is wildly inefficient, and that I'm
-    // being dumb about doing it this way... but for now, this is
-    // mathematically correct
+    // the BSP tree should be ensuring that we only get to this function
+    // if this wall is facing the camera
+    assert(GeomUtils::IsPointInFrontOfLine(wall.seg, camera.location));
     
-    // find the angles and distances to the wall's endpoints
-    
-    bool p1IsOnScreen = false, p2IsOnScreen = false;
-    uint32_t screenXP1, screenXP2;
-    double distP1, distP2;
-    uint32_t columnHeightP1, columnHeightP2;
-    double textureXPercentageP1, textureXPercentageP2;
-    
-    // TODO: is it accurate enough to use camera.leftmostVisibleAngle, vs. the angle
-    // from a line drawn from camera.location through the "middle" of the first pixel on the
-    // left side of the screen?
-    
-    double angleP1 = getAngleFromCamera(wall.seg.p1);
-    if (angleP1 >= camera.leftmostVisibleAngle && angleP1 <= camera.rightmostVisibleAngle)
+    // but this doesn't mean that the wall is "in front of" the camera
+    // as per the camera's view direction
+    // cull any walls that are entirely behind the camera to reduce processing
+    if (!camera.IsBehind(wall.seg))
     {
-        screenXP1 = getScreenXFromAngle(angleP1);
-        //if (isOnScreen(screenXP1))
-        //{
-        p1IsOnScreen = true;
-        distP1 = getPerpendicularDistanceFromCameraByAngle(wall.seg.p1, angleP1);
-        columnHeightP1 = getColumnHeightByDistance(distP1, wall.height);
-        textureXPercentageP1 = 0;
-        //}
-    }
-    else if (angleP1 > camera.rightmostVisibleAngle)
-    {
-        Line ray{ camera.location, camera.rightmostViewPlaneEnd };
-        Vec2 intersection;
-        double u;
-        if (GeomUtils::FindRayLineSegIntersection(ray, wall.seg, intersection, u) == true)
-        {
-            screenXP1 = g.ScreenWidth - 1;
-            p1IsOnScreen = true;
-            distP1 = getPerpendicularDistanceFromCameraByAngle(intersection, camera.rightmostVisibleAngle);
-            columnHeightP1 = getColumnHeightByDistance(distP1, wall.height);
-            textureXPercentageP1 = u;
-        }
-    }
-    else if (angleP1 < camera.leftmostVisibleAngle)
-    {
-        Line ray{ camera.location, camera.leftmostViewPlaneEnd };
-        Vec2 intersection;
-        double u;
-        if (GeomUtils::FindRayLineSegIntersection(ray, wall.seg, intersection, u) == true)
-        {
-            screenXP1 = 0;
-            p1IsOnScreen = true;
-            distP1 = getPerpendicularDistanceFromCameraByAngle(intersection, camera.leftmostVisibleAngle);
-            columnHeightP1 = getColumnHeightByDistance(distP1, wall.height);
-            textureXPercentageP1 = u;
-        }
-    }
-    
-    double angleP2 = getAngleFromCamera(wall.seg.p2);
-    if (angleP2 >= camera.leftmostVisibleAngle && angleP2 <= camera.rightmostVisibleAngle)
-    {
-        screenXP2 = getScreenXFromAngle(angleP2);
-        //if (isOnScreen(screenXP2))
-        //{
-        p2IsOnScreen = true;
-        distP2 = getPerpendicularDistanceFromCameraByAngle(wall.seg.p2, angleP2);
-        columnHeightP2 = getColumnHeightByDistance(distP2, wall.height);
-        textureXPercentageP2 = 1.0;
-        //}
-    }
-    else if (angleP2 > camera.rightmostVisibleAngle)
-    {
-        Line ray{ camera.location, camera.rightmostViewPlaneEnd };
-        Vec2 intersection;
-        double u;
-        if (GeomUtils::FindRayLineSegIntersection(ray, wall.seg, intersection, u) == true)
-        {
-            screenXP2 = g.ScreenWidth - 1;
-            p2IsOnScreen = true;
-            distP2 = getPerpendicularDistanceFromCameraByAngle(intersection, camera.rightmostVisibleAngle);
-            columnHeightP2 = getColumnHeightByDistance(distP2, wall.height);
-            textureXPercentageP2 = u;
-        }
-    }
-    else if (angleP2 < camera.leftmostVisibleAngle)
-    {
-        Line ray{ camera.location, camera.leftmostViewPlaneEnd };
-        Vec2 intersection;
-        double u;
-        if (GeomUtils::FindRayLineSegIntersection(ray, wall.seg, intersection, u) == true)
-        {
-            screenXP2 = 0;
-            p2IsOnScreen = true;
-            distP2 = getPerpendicularDistanceFromCameraByAngle(intersection, camera.leftmostVisibleAngle);
-            columnHeightP2 = getColumnHeightByDistance(distP2, wall.height);
-            textureXPercentageP2 = u;
-        }
-    }
-    
-    // fill in the middle
-    if (p1IsOnScreen && p2IsOnScreen)
-    {
-        // potentially swap things around so that p1 is always to the left of p2,
-        // so that we can draw left to right
-        if (screenXP2 < screenXP1)
-        {
-            std::swap(distP1, distP2);
-            std::swap(screenXP1, screenXP2);
-            std::swap(columnHeightP1, columnHeightP2);
-            std::swap(textureXPercentageP1, textureXPercentageP2);
-        }
+        // at this point, we can safely assume that the p2 vertex of the wall is to the right
+        // of the p1 vertex in screen coordinates!
         
-        double columnHeight = columnHeightP1;
-        uint32_t screenXDifference = screenXP2 - screenXP1;
-        double columnHeightIncrement = static_cast<double>(unsignedSub(columnHeightP2, columnHeightP1) / static_cast<double>(screenXDifference));
+        bool p1IsOnScreen = false, p2IsOnScreen = false;
+        uint32_t screenXP1, screenXP2;
+        double distP1, distP2;
+        double textureXPercentageP1 = 0.0f, textureXPercentageP2 = 1.0f;
         
-        // (U/Z) / (1/Z) = U/Z * Z = U
-        // (U/Z) and (1/Z) can increment linearly as we go across screen X coordinates
+        // get properties for screen x, texture x percentage, and distance for each vertex, with clipping
+        p1IsOnScreen = ClipAndGetAttributes(true, wall.seg, screenXP1, distP1, textureXPercentageP1);
+        p2IsOnScreen = ClipAndGetAttributes(false, wall.seg, screenXP2, distP2, textureXPercentageP2);
         
-        // distance does not increment linearly!
-        // but 1/distance does!
-        // (1/Z)
-        const double inverseDistStart = 1.0 / distP1;
-        const double inverseDistEnd = 1.0 / distP2;
-        const double inverseDistIncrement = (inverseDistEnd - inverseDistStart) / static_cast<double>(screenXDifference);
-        double inverseDist = inverseDistStart;
-        
-        // (U/Z)
-        const double textureXPercentageOverDistStart = textureXPercentageP1 / distP1;
-        const double textureXPercentageOverDistEnd = textureXPercentageP2 / distP2;
-        const double textureXPercentageOverDistIncrement = (textureXPercentageOverDistEnd - textureXPercentageOverDistStart) / static_cast<double>(screenXDifference);
-        double textureXPercentageOverDist = textureXPercentageOverDistStart;
-        
-        // this stuff is for affine texture mapping (bad) only
-        double textureXPercentage = 0;
-        double textureXPercentageIncrement = 0;
-        if ((wall.textureNum != -1) && affineTextureMapping)
+        // if both (clipped) vertices are on screen, fill in the middle
+        if (p1IsOnScreen && p2IsOnScreen)
         {
-            textureXPercentage = textureXPercentageP1;
-            textureXPercentageIncrement = (textureXPercentageP2 - textureXPercentageP1) / static_cast<double>(screenXDifference);
-        }
-        
-        // TODO: textureXPercentage can't increase linearly as we go from left to right across the screen
-        // it's not that simple... this works only if the wall is facing the camera "head on"
-        
-        for (uint32_t screenX = screenXP1; screenX </*=?*/ screenXP2; screenX++)
-        {
-            if (!affineTextureMapping)
+            assert(screenXP1 <= screenXP2);
+            
+            uint32_t columnHeightP1 = getColumnHeightByDistance(distP1, wall.height);
+            uint32_t columnHeightP2 = getColumnHeightByDistance(distP2, wall.height);
+
+            double columnHeight = columnHeightP1;
+            uint32_t screenXDifference = screenXP2 - screenXP1;
+            double columnHeightIncrement = static_cast<double>(unsignedSub(columnHeightP2, columnHeightP1) / static_cast<double>(screenXDifference));
+            
+            // (U/Z) / (1/Z) = U/Z * Z = U
+            // (U/Z) and (1/Z) can increment linearly as we go across screen X coordinates
+            
+            // distance does not increment linearly!
+            // but 1/distance does!
+            // (1/Z)
+            const double inverseDistStart = 1.0 / distP1;
+            const double inverseDistEnd = 1.0 / distP2;
+            const double inverseDistIncrement = (inverseDistEnd - inverseDistStart) / static_cast<double>(screenXDifference);
+            double inverseDist = inverseDistStart;
+            
+            // (U/Z)
+            const double textureXPercentageOverDistStart = textureXPercentageP1 / distP1;
+            const double textureXPercentageOverDistEnd = textureXPercentageP2 / distP2;
+            const double textureXPercentageOverDistIncrement = (textureXPercentageOverDistEnd - textureXPercentageOverDistStart) / static_cast<double>(screenXDifference);
+            double textureXPercentageOverDist = textureXPercentageOverDistStart;
+            
+            // this stuff is for affine texture mapping (bad) only
+            double textureXPercentage = 0;
+            double textureXPercentageIncrement = 0;
+            if ((wall.textureNum != -1) && affineTextureMapping)
             {
-                // accurate, but division in loop
-                // U = U/Z * Z = (U/Z) / (1/Z) 
-                textureXPercentage = textureXPercentageOverDist / inverseDist;
+                textureXPercentage = textureXPercentageP1;
+                textureXPercentageIncrement = (textureXPercentageP2 - textureXPercentageP1) / static_cast<double>(screenXDifference);
             }
             
-            RenderColumn(screenX, static_cast<uint32_t>(columnHeight + 0.5), wall.c, wall.textureNum, textureXPercentage);
-            
-            columnHeight += columnHeightIncrement;
-            
-            if (affineTextureMapping)
+            for (uint32_t screenX = screenXP1; screenX </*=?*/ screenXP2; screenX++)
             {
-                // inaccurate, but quick (simple addition)
-                textureXPercentage += textureXPercentageIncrement;
-            }
-            else
-            {
-                textureXPercentageOverDist += textureXPercentageOverDistIncrement;
-                inverseDist += inverseDistIncrement;
+                if (!affineTextureMapping)
+                {
+                    // accurate, but division in loop
+                    // U = U/Z * Z = (U/Z) / (1/Z) 
+                    textureXPercentage = textureXPercentageOverDist / inverseDist;
+                }
+                
+                if (!pDrawnBuffer[screenX])
+                {
+                    RenderColumn(screenX, static_cast<uint32_t>(columnHeight + 0.5), wall.c, wall.textureNum, textureXPercentage);
+                    pDrawnBuffer[screenX] = true;
+                }
+                
+                columnHeight += columnHeightIncrement;
+                
+                if (affineTextureMapping)
+                {
+                    // inaccurate, but quick (simple addition)
+                    textureXPercentage += textureXPercentageIncrement;
+                }
+                else
+                {
+                    textureXPercentageOverDist += textureXPercentageOverDistIncrement;
+                    inverseDist += inverseDistIncrement;
+                }
             }
         }
+        // else the wall is in front of the camera, but entirely outside the field of view to the right
+        // or the left
     }
 }
 
@@ -223,17 +162,11 @@ uint32_t Renderer::getScreenXFromAngle(double angle)
     // (see notebook for the math)
     double opp = camera.viewPlaneDist * tan(angle);
     double percentWidth = opp / (camera.viewPlaneWidth / 2);
-    uint32_t screenX = static_cast<uint32_t>(percentWidth * static_cast<double>(HalfScreenWidth) + 0.5) + HalfScreenWidth;
-    return screenX;
-}
+    uint32_t screenX = static_cast<uint32_t>(percentWidth * static_cast<double>(HalfScreenWidth)) + HalfScreenWidth;
 
-// TODO: code calling this function should probably be improved such
-// that this function need not exist...
-bool Renderer::isOnScreen(uint32_t screenX)
-{
-    //	return true;
-    return (screenX >= 0 /* always will be, because it's unsigned... */
-            && screenX < g.ScreenWidth);
+    assert(screenX < g.ScreenWidth);
+    
+    return screenX;
 }
 
 // this is kind of a silly function, but it must exist when dealing with unsigned numbers...
@@ -270,4 +203,52 @@ uint32_t Renderer::RenderColumn(uint32_t screenX, uint32_t height, Color c, uint
     }
 
     return y1 + clippedHeight;
+}
+
+bool Renderer::ClipAndGetAttributes(bool leftSide, const Line& wallSeg, uint32_t& screenX, double& dist, double& textureXPercentage)
+{
+    bool pIsOnScreen = false;
+    Vec2 p = (leftSide ? wallSeg.p1 : wallSeg.p2);
+    double angle = getAngleFromCamera(p);
+    
+    // TODO: is it accurate enough to use camera.leftmostVisibleAngle, vs. the angle
+    // from a line drawn from camera.location through the "middle" of the first pixel on the
+    // left side of the screen?
+    
+    // if point is in the field of view
+    if (angle >= camera.leftmostVisibleAngle && angle <= camera.rightmostVisibleAngle)
+    {
+        pIsOnScreen = true;
+        screenX = getScreenXFromAngle(angle);
+        textureXPercentage = (leftSide ? 0.0f : 1.0f);
+    }
+    else
+    {
+        // perform clipping if necessary
+        Line ray;
+        if (leftSide) // clip to the left of the camera's field of view
+        {
+            angle = camera.leftmostVisibleAngle;
+            ray = {camera.location, camera.leftmostViewPlaneEnd};
+        }
+        else // clip to the right of the camera's field of view
+        {
+            angle = camera.rightmostVisibleAngle;
+            ray = {camera.location, camera.rightmostViewPlaneEnd};
+        }
+        
+        if (GeomUtils::FindRayLineSegIntersection(ray, wallSeg, p, textureXPercentage))
+        {
+            pIsOnScreen = true;
+            screenX = (leftSide ? 0 : (g.ScreenWidth - 1));
+        }
+        // else no clipping was performed - the point is out of the field of
+        // view and the wall does not lie in the path of the edges of the field
+        // of view
+    }
+    
+    if (pIsOnScreen)
+        dist = getPerpendicularDistanceFromCameraByAngle(p, angle);
+    
+    return pIsOnScreen;
 }

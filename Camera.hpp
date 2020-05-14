@@ -10,8 +10,21 @@
 #define Camera_hpp
 
 #include "Vec2.hpp"
-#include "Mat2.hpp"
+#include "Line.hpp"
 
+//              * location  -
+//             /|\          ^
+//            / | \         |
+//           /  |  \        | viewPlaneDist
+//          /   |   \       |
+//         /    |    \      |
+//        /     |dir  \     v
+//       <-----*v------     -
+// halfViewPlane
+//
+//       |<----------->|
+//       viewPlaneWidth
+//
 class Camera
 {
 public:
@@ -21,6 +34,8 @@ public:
     void rotate(double angleRad);
     void moveForward(double distance);
     void strafe(double distanceToRight);
+    bool IsBehind(const Vec2& p) const;
+    bool IsBehind(const Line& l) const;
 
 	const float viewPlaneWidth {5}; // maps to screen width
 	const float viewPlaneDist {5};

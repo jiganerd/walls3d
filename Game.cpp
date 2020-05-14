@@ -20,13 +20,13 @@ Game::Game():
     },
     walls
     {
-        // world bounding box
+        // area bounding box
         { { {   0,   0 }, { 200,   0 } }, 10, {   0,   0, 255 }, 2 },
         { { { 200,   0 }, { 200, 200 } }, 10, {   0,   0, 255 }, 2 },
         { { { 200, 200 }, {   0, 200 } }, 10, {   0,   0, 255 }, 2 },
         { { {   0, 200 }, {   0,   0 } }, 10, {   0,   0, 255 }, 2 },
         // red wall
-        { { { 130, 160 }, { 180, 180 } }, 10, { 255,   0,   0 }, 3 },
+        { { { 180, 180 }, { 130, 160 } }, 10, { 255,   0,   0 }, 3 },
         // purple/textured wall
         { { {  10,  50 }, {  30,  80 } }, 10, { 255,   0, 255 }, 1 },
         { { {  30,  80 }, {  60,  60 } }, 10, { 255,   0, 255 }, 1 },
@@ -34,6 +34,7 @@ Game::Game():
         { { {  40,  30 }, {  10,  50 } }, 10, { 255,   0, 255 }, 1 },
     },
     camera({50, 5}),
+    frm(true),
     r(g, camera),
     bspTree{walls, worldBounds, std::bind(&Renderer::RenderWall, &r, std::placeholders::_1)}
 {
@@ -48,7 +49,9 @@ bool Game::ProcessFrame()
     {
         HandleKeys();
         
+        // TODO: organize this a bit
         g.BeginFrame();
+        r.BeginRender();
         bspTree.Render(camera.location);
         DrawMap();
         g.EndFrame();

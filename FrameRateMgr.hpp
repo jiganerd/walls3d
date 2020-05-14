@@ -14,7 +14,7 @@
 class FrameRateMgr
 {
 public:
-    FrameRateMgr();
+    FrameRateMgr(bool printFps = false);
     ~FrameRateMgr() = default;
     void Mark();
     float GetFrameTimeSecs() { return frameTimeSecs; }
@@ -22,9 +22,10 @@ public:
     static constexpr float PrintEverySecs = 1.0f;
 
 private:
+    bool printFps;
     // time it took to render the last frame, in secs
     float frameTimeSecs = 0.100; // (something reasonable before the first frame is rendered)
-    clock_t lastClockTicks;
+    Uint32 lastClockTicks;
     float secsUntilPrint = PrintEverySecs;
 };
 

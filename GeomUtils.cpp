@@ -17,6 +17,8 @@
 //         |
 //         * l.p1
 //
+// this convention has the benefit of natural "left to right" screen drawing for a line/wall when the
+// camera is in "front" of the line/wall
 bool GeomUtils::IsPointInFrontOfLine(const Line& l, const Vec2& p)
 {
     return ((p - l.p1).cross(l.p2 - l.p1) < 0);
@@ -46,13 +48,14 @@ bool GeomUtils::FindRayLineIntersection(const Line& ray, const Line& line, Vec2&
 
 double GeomUtils::AngleBetween(const Vec2& v1, const Vec2& v2)
 {
+    // could also be asin(v1.cross(v2) / (v1.Mag() * v2.Mag()))
     return acos((v1 * v2) / (v1.Mag() * v2.Mag()));
-    //	return asin(v1.cross(v2) / (v1.Mag() * v2.Mag()));
 }
 
 // a faster version of angleBetweenVectors, if the vectors have already been normalized
 double GeomUtils::AngleBetweenNorm(const Vec2& v1, const Vec2& v2)
 {
+    // could also be asin(v1 * v2)
     return acos(v1 * v2);
 }
 
