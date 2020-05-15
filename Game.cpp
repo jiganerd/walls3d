@@ -35,18 +35,17 @@ Game::Game():
     },
     camera({50, 5}),
     frm(true),
-    r(g, camera),
-    bspTree{walls, worldBounds, std::bind(&Renderer::RenderWall, &r, std::placeholders::_1)}
+    bspr(g, camera, walls, worldBounds, textures),
+    rc(g, camera, walls, worldBounds, textures),
+    pActiveRenderer{&bspr}
 {
-    r.BindTexture(Graphics::LoadTexture("brick.bmp", true));
-    r.BindTexture(Graphics::LoadTexture("brick_markedup.bmp", true));
-    r.BindTexture(Graphics::LoadTexture("stripes.bmp", true));
+    textures.push_back(Graphics::LoadTexture("brick.bmp", true));
+    textures.push_back(Graphics::LoadTexture("brick_markedup.bmp", true));
+    textures.push_back(Graphics::LoadTexture("stripes.bmp", true));
     
     Surface xorSurface(256, 256);
     xorSurface.FillXorPattern();
-    r.BindTexture(std::move(xorSurface));
-
-    bspTree.Print();
+    textures.push_back(std::move(xorSurface));
 }
 
 bool Game::ProcessFrame()
@@ -57,11 +56,11 @@ bool Game::ProcessFrame()
     {
         HandleKeys();
         
-        // TODO: organize this a bit
         g.BeginFrame();
-        r.BeginRender();
-        bspTree.Render(camera.location);
-        DrawMap();
+        
+        pActiveRenderer->RenderScene();
+        pActiveRenderer->RenderMap();
+
         g.EndFrame();
         
         frm.Mark();
@@ -81,37 +80,13 @@ void Game::HandleKeys()
     if (i.GetRotateRight())  camera.rotate(rotSpeed);
     if (i.GetStrafeLeft())   camera.strafe(-moveSpeed);
     if (i.GetStrafeRight())  camera.strafe(moveSpeed);
-}
-
-void Game::DrawMap()
-{
-    // draw world bounds
-    for (const auto& line : worldBounds)
-        DrawMapLine(line, Colors::Blue);
     
-    // draw walls and BSP split lines
-    bspTree.DebugTraverse(std::bind(&Game::DrawMapBsp1, this, std::placeholders::_1, std::placeholders::_2));
-    bspTree.DebugTraverse(std::bind(&Game::DrawMapBsp2, this, std::placeholders::_1, std::placeholders::_2));
-    
-    // draw the camera's viewing frustrum
-    DrawMapLine({camera.location, camera.leftmostViewPlaneEnd}, Colors::Red);
-    DrawMapLine({camera.rightmostViewPlaneEnd, camera.location}, Colors::Red);
-    DrawMapLine({camera.leftmostViewPlaneEnd, camera.rightmostViewPlaneEnd}, Colors::Cyan);
-}
-
-void Game::DrawMapBsp1(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
-{
-    DrawMapLine(debugInfo.extendedLineForMapDrawingBackward, Colors::Gray);
-    DrawMapLine(debugInfo.extendedLineForMapDrawingForward, Colors::Gray);
-}
-
-void Game::DrawMapBsp2(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
-{
-    DrawMapLine(wall.seg, debugInfo.mapColor);
-}
-
-void Game::DrawMapLine(const Line& line, const Color&c)
-{
-    Vec2 transVec {10.0f, 10.0f};
-    g.DrawLine(line.p1 + transVec, line.p2 + transVec, c);
+    // swap renderers when tab pressed
+    if (i.GetTabFirstPressed())
+    {
+        if (pActiveRenderer == &bspr)
+            pActiveRenderer = &rc;
+        else
+            pActiveRenderer = &bspr;
+    }
 }

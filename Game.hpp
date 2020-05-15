@@ -10,15 +10,15 @@
 #define Game_hpp
 
 #include <vector>
+#include "Surface.hpp"
 #include "Graphics.hpp"
 #include "Wall.hpp"
 #include "Line.hpp"
-#include "Wall.hpp"
-#include "BspTree.hpp"
 #include "FrameRateMgr.hpp"
 #include "Input.hpp"
 #include "Camera.hpp"
-#include "Renderer.hpp"
+#include "BspRenderer.hpp"
+#include "Raycaster.hpp"
 
 class Game
 {
@@ -28,22 +28,18 @@ public:
     
 private:
     void HandleKeys();
-    void DrawMap();
-    void DrawMapBsp1(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
-    void DrawMapBsp2(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
-    void DrawMapLine(const Line& line, const Color&c);
 
     const Vec2 worldMax;
     std::vector<Line> worldBounds;
     std::vector<Wall> walls;
-    Camera camera;
-    
+    std::vector<Surface> textures;
     Graphics g;
+    Camera camera;
     Input i;
     FrameRateMgr frm;
-    Renderer r;
-    
-    BspTree bspTree;
+    BspRenderer bspr;
+    Raycaster rc;
+    Renderer* pActiveRenderer;
 };
 
 #endif /* Game_hpp */

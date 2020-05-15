@@ -47,8 +47,8 @@ private:
         int GetIndex() { return debugInfo.nodeIndex; }
         void Print();
         int32_t Find(const Vec2& p);
-        void Render(const Vec2& cameraLoc);
-        void DebugTraverse(DebugFuncType debugFunc);
+        void TraverseRender(const Vec2& cameraLoc);
+        void TraverseDebug(DebugFuncType debugFunc);
 
     private:
         void ExtendMapLineToSectionBounds(const std::vector<Line>& sectionBounds);
@@ -67,9 +67,8 @@ public:
     
     void Print();
     int32_t Find(const Vec2& p);
-    void Render(const Vec2& cameraLoc);
-    
-    void DebugTraverse(DebugFuncType debugFunc);
+    void TraverseRender(const Vec2& cameraLoc);
+    void TraverseDebug(DebugFuncType debugFunc);
     
 private:
     // for "compiling" tree
@@ -77,9 +76,9 @@ private:
     static void SplitWalls(const Line& splitterLine, const std::vector<Wall>& walls, std::vector<Wall>& backWalls, std::vector<Wall>& frontWalls);
     static size_t FindBestSplitterWallIndex(const std::vector<Wall>& walls);
     
+    uint32_t numNodes;
+    std::unique_ptr<BspNode> pRootNode;
     RenderFuncType renderFunc;
-    std::unique_ptr<BspNode> pRootNode {nullptr};
-    int32_t numNodes {0};
     
     static const std::vector<Color> mapColors;
 };

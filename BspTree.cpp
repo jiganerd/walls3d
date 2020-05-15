@@ -121,7 +121,7 @@ int32_t BspTree::BspNode::Find(const Vec2& p)
 
 // this renders *front to back* (closest walls first), and also performs backface culling
 // (walls facing away from the camera are not rendered)
-void BspTree::BspNode::Render(const Vec2& cameraLoc)
+void BspTree::BspNode::TraverseRender(const Vec2& cameraLoc)
 {
     // if the camera is in front of this node's wall
     if (GeomUtils::GeomUtils::IsPointInFrontOfLine(wall.seg, cameraLoc))
@@ -129,9 +129,9 @@ void BspTree::BspNode::Render(const Vec2& cameraLoc)
         // render the nodes in front of this one, then this one, then the ones behind
         // (front to back)
         
-        if (pFrontNode) pFrontNode->Render(cameraLoc);
+        if (pFrontNode) pFrontNode->TraverseRender(cameraLoc);
         pOwnerTree->renderFunc(wall);
-        if (pBackNode) pBackNode->Render(cameraLoc);
+        if (pBackNode) pBackNode->TraverseRender(cameraLoc);
     }
     // ... or in back
     else
@@ -141,8 +141,8 @@ void BspTree::BspNode::Render(const Vec2& cameraLoc)
         // since this wall is facing away from the camera, we render the ones in back of it
         // (closer to the camera) before the ones in front of it (farther from the camera)
 
-        if (pBackNode) pBackNode->Render(cameraLoc);
-        if (pFrontNode) pFrontNode->Render(cameraLoc);
+        if (pBackNode) pBackNode->TraverseRender(cameraLoc);
+        if (pFrontNode) pFrontNode->TraverseRender(cameraLoc);
     }
     
     // TODO: handle if camera is exactly on this node's line
@@ -150,14 +150,15 @@ void BspTree::BspNode::Render(const Vec2& cameraLoc)
     // (I currenly don't have this set up as a list...)
 }
 
-void BspTree::BspNode::DebugTraverse(BspTree::DebugFuncType debugFunc)
+void BspTree::BspNode::TraverseDebug(BspTree::DebugFuncType debugFunc)
 {
-    if (pBackNode) pBackNode->DebugTraverse(debugFunc);
+    if (pBackNode) pBackNode->TraverseDebug(debugFunc);
     debugFunc(wall, debugInfo);
-    if (pFrontNode) pFrontNode->DebugTraverse(debugFunc);
+    if (pFrontNode) pFrontNode->TraverseDebug(debugFunc);
 }
 
 BspTree::BspTree(const vector<Wall>& walls, const vector<Line>& sectionBounds, RenderFuncType renderFunc):
+    numNodes{0},
     renderFunc{renderFunc},
     pRootNode{CreateNode(walls, sectionBounds)}
 {
@@ -185,16 +186,16 @@ int32_t BspTree::Find(const Vec2& p)
     return (pRootNode ? pRootNode->Find(p) : -1);
 }
 
-void BspTree::Render(const Vec2& cameraLoc)
+void BspTree::TraverseRender(const Vec2& cameraLoc)
 {
     if (pRootNode)
-        pRootNode->Render(cameraLoc);
+        pRootNode->TraverseRender(cameraLoc);
 }
 
-void BspTree::DebugTraverse(BspTree::DebugFuncType debugFunc)
+void BspTree::TraverseDebug(BspTree::DebugFuncType debugFunc)
 {
     if (pRootNode)
-        pRootNode->DebugTraverse(debugFunc);
+        pRootNode->TraverseDebug(debugFunc);
 }
 
 void BspTree::SplitWalls(const Line& splitterLine, const vector<Wall>& walls, vector<Wall>& backWalls, vector<Wall>& frontWalls)

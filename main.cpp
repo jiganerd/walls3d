@@ -8,10 +8,9 @@
 
 // TODO:
 // fix frame rate manager
-// add Raycaster and BspRenderer classes inheriting from Renderer, move map drawing there
-// clean up high-level class organization
 // consistent style: use uniform init., capitalization of funcs, stdint vs. other style, floats vs. doubles, X.0f style for floating point
 // clipping on map drawing
+// show BSP visible walls in map
 
 #include <iostream>
 #include "Game.hpp"
