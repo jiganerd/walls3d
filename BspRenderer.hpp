@@ -35,12 +35,16 @@ private:
     int32_t unsignedSub(uint32_t n1, uint32_t n2);
     bool ClipAndGetAttributes(bool leftSide, const Line& wallSeg, uint32_t& screenX, double& dist, double& textureXPercentage);
 
-    void RenderMapDivisions(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
-    void RenderMapWalls(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
+    void RenderMapDivision(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
+    void RenderMapWallDark(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
+    void RenderMapWallBright(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
+    
+    void PrintCameraNodeIndex();
 
     bool affineTextureMapping {false};
     
     BspTree bspTree;
+    int32_t cameraNodeIndex;
 };
 
 #endif /* BspRenderer_hpp */

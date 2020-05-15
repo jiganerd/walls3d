@@ -33,8 +33,7 @@ public:
         Line extendedLineForMapDrawingBackward;
     };
 
-    using RenderFuncType = std::function<void(const Wall&)>;
-    using DebugFuncType = std::function<void(const Wall& wall, const BspNodeDebugInfo&)>;
+    using TraversalCbType = std::function<void(const Wall&, const BspNodeDebugInfo&)>;
 
 private:
     class BspNode
@@ -44,11 +43,11 @@ private:
                 const std::vector<Line>& sectionBounds, uint32_t index);
         ~BspNode() = default;
         
-        int GetIndex() { return debugInfo.nodeIndex; }
+        uint32_t GetIndex() { return debugInfo.nodeIndex; }
         void Print();
         int32_t Find(const Vec2& p);
-        void TraverseRender(const Vec2& cameraLoc);
-        void TraverseDebug(DebugFuncType debugFunc);
+        void TraverseRender(const Vec2& cameraLoc, TraversalCbType renderFunc);
+        void TraverseDebug(TraversalCbType debugFunc);
 
     private:
         void ExtendMapLineToSectionBounds(const std::vector<Line>& sectionBounds);
@@ -62,13 +61,13 @@ private:
     };
 
 public:
-    BspTree(const std::vector<Wall>& walls, const std::vector<Line>& sectionBounds, RenderFuncType renderFunc);
+    BspTree(const std::vector<Wall>& walls, const std::vector<Line>& sectionBounds);
     ~BspTree() = default;
     
     void Print();
     int32_t Find(const Vec2& p);
-    void TraverseRender(const Vec2& cameraLoc);
-    void TraverseDebug(DebugFuncType debugFunc);
+    void TraverseRender(const Vec2& cameraLoc, TraversalCbType renderFunc);
+    void TraverseDebug(TraversalCbType debugFunc);
     
 private:
     // for "compiling" tree
@@ -78,7 +77,6 @@ private:
     
     uint32_t numNodes;
     std::unique_ptr<BspNode> pRootNode;
-    RenderFuncType renderFunc;
     
     static const std::vector<Color> mapColors;
 };

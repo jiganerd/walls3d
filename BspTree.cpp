@@ -114,14 +114,14 @@ void BspTree::BspNode::Print()
 int32_t BspTree::BspNode::Find(const Vec2& p)
 {
     if (GeomUtils::GeomUtils::IsPointInFrontOfLine(wall.seg, p))
-        return (pFrontNode ? pFrontNode->Find(p) : -1);
+        return (pFrontNode ? pFrontNode->Find(p) : debugInfo.nodeIndex);
     else
-        return (pBackNode ? pBackNode->Find(p) : -1);
+        return (pBackNode ? pBackNode->Find(p) : debugInfo.nodeIndex);
 }
 
 // this renders *front to back* (closest walls first), and also performs backface culling
 // (walls facing away from the camera are not rendered)
-void BspTree::BspNode::TraverseRender(const Vec2& cameraLoc)
+void BspTree::BspNode::TraverseRender(const Vec2& cameraLoc, TraversalCbType renderFunc)
 {
     // if the camera is in front of this node's wall
     if (GeomUtils::GeomUtils::IsPointInFrontOfLine(wall.seg, cameraLoc))
@@ -129,9 +129,9 @@ void BspTree::BspNode::TraverseRender(const Vec2& cameraLoc)
         // render the nodes in front of this one, then this one, then the ones behind
         // (front to back)
         
-        if (pFrontNode) pFrontNode->TraverseRender(cameraLoc);
-        pOwnerTree->renderFunc(wall);
-        if (pBackNode) pBackNode->TraverseRender(cameraLoc);
+        if (pFrontNode) pFrontNode->TraverseRender(cameraLoc, renderFunc);
+        renderFunc(wall, debugInfo);
+        if (pBackNode) pBackNode->TraverseRender(cameraLoc, renderFunc);
     }
     // ... or in back
     else
@@ -141,8 +141,8 @@ void BspTree::BspNode::TraverseRender(const Vec2& cameraLoc)
         // since this wall is facing away from the camera, we render the ones in back of it
         // (closer to the camera) before the ones in front of it (farther from the camera)
 
-        if (pBackNode) pBackNode->TraverseRender(cameraLoc);
-        if (pFrontNode) pFrontNode->TraverseRender(cameraLoc);
+        if (pBackNode) pBackNode->TraverseRender(cameraLoc, renderFunc);
+        if (pFrontNode) pFrontNode->TraverseRender(cameraLoc, renderFunc);
     }
     
     // TODO: handle if camera is exactly on this node's line
@@ -150,16 +150,15 @@ void BspTree::BspNode::TraverseRender(const Vec2& cameraLoc)
     // (I currenly don't have this set up as a list...)
 }
 
-void BspTree::BspNode::TraverseDebug(BspTree::DebugFuncType debugFunc)
+void BspTree::BspNode::TraverseDebug(BspTree::TraversalCbType debugFunc)
 {
     if (pBackNode) pBackNode->TraverseDebug(debugFunc);
     debugFunc(wall, debugInfo);
     if (pFrontNode) pFrontNode->TraverseDebug(debugFunc);
 }
 
-BspTree::BspTree(const vector<Wall>& walls, const vector<Line>& sectionBounds, RenderFuncType renderFunc):
+BspTree::BspTree(const vector<Wall>& walls, const vector<Line>& sectionBounds):
     numNodes{0},
-    renderFunc{renderFunc},
     pRootNode{CreateNode(walls, sectionBounds)}
 {
 }
@@ -186,13 +185,13 @@ int32_t BspTree::Find(const Vec2& p)
     return (pRootNode ? pRootNode->Find(p) : -1);
 }
 
-void BspTree::TraverseRender(const Vec2& cameraLoc)
+void BspTree::TraverseRender(const Vec2& cameraLoc, TraversalCbType renderFunc)
 {
     if (pRootNode)
-        pRootNode->TraverseRender(cameraLoc);
+        pRootNode->TraverseRender(cameraLoc, renderFunc);
 }
 
-void BspTree::TraverseDebug(BspTree::DebugFuncType debugFunc)
+void BspTree::TraverseDebug(BspTree::TraversalCbType debugFunc)
 {
     if (pRootNode)
         pRootNode->TraverseDebug(debugFunc);

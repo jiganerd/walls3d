@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <cassert>
+#include <iostream>
 #include "BspRenderer.hpp"
 #include "GeomUtils.hpp"
 
@@ -19,15 +20,25 @@ BspRenderer::BspRenderer(Graphics& g,
                          const vector<Line>& worldBounds,
                          const vector<Surface>& textures):
     Renderer(g, camera, walls, worldBounds, textures),
-    bspTree{walls, worldBounds, std::bind(&BspRenderer::RenderWall, this, std::placeholders::_1)}
+    bspTree{walls, worldBounds},
+    cameraNodeIndex{bspTree.Find(camera.location)}
 {
     bspTree.Print();
+    PrintCameraNodeIndex();
 }
 
 void BspRenderer::RenderScene()
 {
     BeginRender();
-    bspTree.TraverseRender(camera.location);
+    bspTree.TraverseRender(camera.location, std::bind(&BspRenderer::RenderWall, this, std::placeholders::_1));
+    
+    // technically this is not "rendering", but... sue me
+    int32_t newCameraNodeIndex {bspTree.Find(camera.location)};
+    if (newCameraNodeIndex != cameraNodeIndex)
+    {
+        cameraNodeIndex = newCameraNodeIndex;
+        PrintCameraNodeIndex();
+    }
 }
 
 void BspRenderer::RenderWall(const Wall &wall)
@@ -212,20 +223,33 @@ void BspRenderer::RenderMap()
 {
     RenderMapBounds();
     
-    // draw walls and BSP split lines
-    bspTree.TraverseDebug(std::bind(&BspRenderer::RenderMapDivisions, this, std::placeholders::_1, std::placeholders::_2));
-    bspTree.TraverseDebug(std::bind(&BspRenderer::RenderMapWalls, this, std::placeholders::_1, std::placeholders::_2));
+    // draw BSP split lines and darkened versions of *all* walls
+    bspTree.TraverseDebug(std::bind(&BspRenderer::RenderMapDivision, this, std::placeholders::_1, std::placeholders::_2));
+    bspTree.TraverseDebug(std::bind(&BspRenderer::RenderMapWallDark, this, std::placeholders::_1, std::placeholders::_2));
     
+    // draw bright versions of the walls which are not culled by the BSP tree render traversal
+    bspTree.TraverseRender(camera.location, std::bind(&BspRenderer::RenderMapWallBright, this, std::placeholders::_1, std::placeholders::_2));
+
     RenderMapCamera();
 }
 
-void BspRenderer::RenderMapDivisions(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
+void BspRenderer::RenderMapDivision(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
 {
     RenderMapLine(debugInfo.extendedLineForMapDrawingBackward, Colors::Gray);
     RenderMapLine(debugInfo.extendedLineForMapDrawingForward, Colors::Gray);
 }
 
-void BspRenderer::RenderMapWalls(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
+void BspRenderer::RenderMapWallDark(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
+{
+    RenderMapLine(wall.seg, debugInfo.mapColor * 0.5f);
+}
+
+void BspRenderer::RenderMapWallBright(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
 {
     RenderMapLine(wall.seg, debugInfo.mapColor);
+}
+
+void BspRenderer::PrintCameraNodeIndex()
+{
+    std::cout << "camera BSP node index: " << cameraNodeIndex << std::endl;
 }

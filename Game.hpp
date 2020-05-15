@@ -30,8 +30,8 @@ private:
     void HandleKeys();
 
     const Vec2 worldMax;
-    std::vector<Line> worldBounds;
-    std::vector<Wall> walls;
+    const std::vector<Line> worldBounds;
+    const std::vector<Wall> walls;
     std::vector<Surface> textures;
     Graphics g;
     Camera camera;
