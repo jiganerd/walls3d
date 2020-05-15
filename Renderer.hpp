@@ -33,9 +33,10 @@ private:
     double getAngleFromCamera(const Vec2& location);
     uint32_t getScreenXFromAngle(double angle);
     int32_t unsignedSub(uint32_t n1, uint32_t n2);
-    uint32_t RenderColumn(uint32_t screenX, uint32_t height, Color c, uint32_t textureNum, double textureXPercentage);
+    void RenderColumn(uint32_t screenX, double height, Color c, uint32_t textureNum, double textureXPercentage);
     bool ClipAndGetAttributes(bool leftSide, const Line& wallSeg, uint32_t& screenX, double& dist, double& textureXPercentage);
     uint32_t mapPercentageToRange(double percentage, uint32_t rangeHigh);
+    inline static uint32_t Rast(double n);
 
     Graphics& g;
     const Camera& camera;

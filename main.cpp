@@ -8,7 +8,6 @@
 
 // TODO:
 // fix frame rate manager
-// fix "fuzzy" texturing between columns
 // add Raycaster and BspRenderer classes inheriting from Renderer, move map drawing there
 // clean up high-level class organization
 // consistent style: use uniform init., capitalization of funcs, stdint vs. other style, floats vs. doubles, X.0f style for floating point
