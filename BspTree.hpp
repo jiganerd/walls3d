@@ -61,9 +61,11 @@ private:
     };
 
 public:
-    BspTree(const std::vector<Wall>& walls, const std::vector<Line>& sectionBounds);
+    BspTree();
     ~BspTree() = default;
-    
+
+    void ProcessWalls(const std::vector<Wall>& walls, const std::vector<Line>& sectionBounds);
+
     void Print();
     int32_t Find(const Vec2& p);
     void TraverseRender(const Vec2& cameraLoc, TraversalCbType renderFunc);

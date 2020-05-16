@@ -16,21 +16,29 @@ using std::vector;
 
 BspRenderer::BspRenderer(Graphics& g,
                          const Camera& camera,
-                         const vector<Wall>& walls,
-                         const vector<Line>& worldBounds,
+                         const std::vector<Line>& worldBounds,
                          const vector<Surface>& textures):
-    Renderer(g, camera, walls, worldBounds, textures),
-    bspTree{walls, worldBounds},
-    cameraNodeIndex{bspTree.Find(camera.location)}
+    Renderer(g, camera, worldBounds, textures),
+    cameraNodeIndex{-1}
 {
+}
+
+void BspRenderer::ProcessWalls(const std::vector<Wall>& walls)
+{
+    bspTree.ProcessWalls(walls, worldBounds);
+    
     bspTree.Print();
+    cameraNodeIndex = bspTree.Find(camera.location);
     PrintCameraNodeIndex();
 }
 
 void BspRenderer::RenderScene()
 {
     BeginRender();
-    bspTree.TraverseRender(camera.location, std::bind(&BspRenderer::RenderWall, this, std::placeholders::_1));
+    
+    bspTree.TraverseRender(camera.location, std::bind(&BspRenderer::RenderWall, this, std::placeholders::_1, std::placeholders::_2));
+    
+    EndRender();
     
     // technically this is not "rendering", but... sue me
     int32_t newCameraNodeIndex {bspTree.Find(camera.location)};
@@ -41,7 +49,7 @@ void BspRenderer::RenderScene()
     }
 }
 
-void BspRenderer::RenderWall(const Wall &wall)
+void BspRenderer::RenderWall(const Wall &wall, const BspTree::BspNodeDebugInfo& debugInfo)
 {
     // the BSP tree should be ensuring that we only get to this function
     // if this wall is facing the camera
@@ -113,7 +121,7 @@ void BspRenderer::RenderWall(const Wall &wall)
                 
                 if (!pDrawnBuffer[screenX])
                 {
-                    RenderColumn(screenX, columnHeight, wall.c, wall.textureNum, textureXPercentage);
+                    RenderColumn(screenX, columnHeight, debugInfo.mapColor, wall.textureNum, textureXPercentage);
                     pDrawnBuffer[screenX] = true;
                 }
                 
@@ -251,5 +259,5 @@ void BspRenderer::RenderMapWallBright(const Wall& wall, const BspTree::BspNodeDe
 
 void BspRenderer::PrintCameraNodeIndex()
 {
-    std::cout << "camera BSP node index: " << cameraNodeIndex << std::endl;
+    std::cout << "Camera BSP node index: " << cameraNodeIndex << std::endl;
 }

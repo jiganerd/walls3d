@@ -21,16 +21,20 @@ class Renderer
 public:
     Renderer(Graphics& g,
              const Camera& camera,
-             const std::vector<Wall>& walls,
              const std::vector<Line>& worldBounds,
              const std::vector<Surface>& textures);
     ~Renderer() = default;
     
     virtual void RenderScene() = 0;
     virtual void RenderMap() = 0;
+    
+    void ToggleBrightnessAdjustment() { brightnessAdjustment = !brightnessAdjustment; }
+    void ToggleDrawTextures() { drawTextures = !drawTextures; }
+    void ShowDrawing() { showDrawing = true; }
 
 protected:
     void BeginRender();
+    void EndRender();
     double getColumnHeightByDistance(double dist, double height);
     void RenderColumn(uint32_t screenX, double height, Color c, uint32_t textureNum, double textureXPercentage);
     uint32_t mapPercentageToRange(double percentage, uint32_t rangeHigh);
@@ -42,7 +46,6 @@ protected:
 
     Graphics& g;
     const Camera& camera;
-    const std::vector<Wall>& walls;
     const std::vector<Line>& worldBounds;
     const std::vector<Surface>& textures;
     

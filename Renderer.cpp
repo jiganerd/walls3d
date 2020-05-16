@@ -18,12 +18,10 @@ using std::vector;
 
 Renderer::Renderer(Graphics& g,
                    const Camera& camera,
-                   const vector<Wall>& walls,
                    const vector<Line>& worldBounds,
                    const std::vector<Surface>& textures):
     g{g},
     camera{camera},
-    walls{walls},
     worldBounds{worldBounds},
     textures{textures},
     HalfScreenWidth{g.ScreenWidth/2},
@@ -35,6 +33,11 @@ Renderer::Renderer(Graphics& g,
 void Renderer::BeginRender()
 {
     memset(pDrawnBuffer.get(), 0, Graphics::ScreenWidth * sizeof(bool));
+}
+
+void Renderer::EndRender()
+{
+    showDrawing = false;
 }
 
 double Renderer::getColumnHeightByDistance(double dist, double height)

@@ -14,6 +14,10 @@ bool Input::ProcessKeys()
     SDL_Event e;
     bool altPressed = false;
     tabFirstPressed = false;
+    sFirstPressed = false;
+    tFirstPressed = false;
+    aFirstPressed = false;
+    bFirstPressed = false;
 
     // TODO: this occasionally throws an exception on OSX...
     while (SDL_PollEvent(&e) != 0)
@@ -107,6 +111,22 @@ bool Input::ProcessKeys()
                     
                 case SDLK_TAB:
                     tabFirstPressed = keyDown;
+                    break;
+                    
+                case SDLK_s:
+                    sFirstPressed = keyDown;
+                    break;
+                    
+                case SDLK_t:
+                    tFirstPressed = keyDown;
+                    break;
+                    
+                case SDLK_a:
+                    aFirstPressed = keyDown;
+                    break;
+                    
+                case SDLK_b:
+                    bFirstPressed = keyDown;
                     break;
                     
                 default:

@@ -157,10 +157,17 @@ void BspTree::BspNode::TraverseDebug(BspTree::TraversalCbType debugFunc)
     if (pFrontNode) pFrontNode->TraverseDebug(debugFunc);
 }
 
-BspTree::BspTree(const vector<Wall>& walls, const vector<Line>& sectionBounds):
+BspTree::BspTree():
     numNodes{0},
-    pRootNode{CreateNode(walls, sectionBounds)}
+    pRootNode(nullptr)
 {
+}
+
+void BspTree::ProcessWalls(const std::vector<Wall>& walls, const std::vector<Line>& sectionBounds)
+{
+    cout << "Compiling BSP tree...";
+    pRootNode = CreateNode(walls, sectionBounds);
+    cout << " done." << endl;
 }
 
 std::unique_ptr<BspTree::BspNode> BspTree::CreateNode(const vector<Wall>& walls, const vector<Line>& sectionBounds)

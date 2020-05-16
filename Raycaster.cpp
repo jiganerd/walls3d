@@ -17,14 +17,17 @@ Raycaster::Raycaster(Graphics& g,
                      const vector<Wall>& walls,
                      const vector<Line>& worldBounds,
                      const vector<Surface>& textures):
-    Renderer(g, camera, walls, worldBounds, textures)
+    Renderer(g, camera, worldBounds, textures),
+    walls{walls}
 {
 }
 
 void Raycaster::RenderScene()
 {
+    BeginRender();
+    
     // do this once, as it is actually a pretty costly call
-    constexpr double infinity = std::numeric_limits<double>::infinity();
+    static constexpr double infinity {std::numeric_limits<double>::infinity()};
 
     // -1 to 1 as we draw across the screen
     double percentWidth = -1.0f;
@@ -36,8 +39,8 @@ void Raycaster::RenderScene()
         // for this current column, figure out the corresponding point
         // on the view plane
         // TODO: optimize performance - don't have to do multiplication here every pass through loop
-        Vec2 vectorToRayPoint = camera.halfViewPlane * percentWidth;
-        Vec2 viewPlanePoint = camera.viewPlaneMiddle + vectorToRayPoint;
+        Vec2 vectorToRayPoint {camera.halfViewPlane * percentWidth};
+        Vec2 viewPlanePoint {camera.viewPlaneMiddle + vectorToRayPoint};
 
         Line ray {camera.location, viewPlanePoint};
         
@@ -53,7 +56,7 @@ void Raycaster::RenderScene()
             double u;
             if (GeomUtils::FindRayLineSegIntersection(ray, wall.seg, intersection, u))
             {
-                double distanceToIntersection = getPerpendicularDistanceFromCamera(intersection, percentWidth);
+                double distanceToIntersection {getPerpendicularDistanceFromCamera(intersection, percentWidth)};
                 
                 // draw this wall intersection only if it is closer than any other
                 // wall intersections drawn so far
@@ -72,7 +75,7 @@ void Raycaster::RenderScene()
         }
         
         // draw the closest wall
-        if (closestWallPtr != nullptr)
+        if (closestWallPtr)
             RenderColumn(column,
                          getColumnHeightByDistance(closestWallDistance, closestWallPtr->height),
                          closestWallPtr->c,
@@ -81,6 +84,8 @@ void Raycaster::RenderScene()
         
         percentWidth += percentWidthIncrement;
     }
+    
+    EndRender();
 }
 
 void Raycaster::RenderMap()
@@ -100,9 +105,9 @@ double Raycaster::getPerpendicularDistanceFromCamera(const Vec2& point, double p
     // this "perpendicular distance" equation prevents the fisheye effect that
     // would be seen with the Euclidean (real) distance
     
-    Vec2 cameraToIntersection = point - camera.location;
-    double opp = percentWidth * camera.viewPlaneWidth / 2;
-    const double adj = camera.viewPlaneDist;
-    double ratio = opp / adj;
+    Vec2 cameraToIntersection {point - camera.location};
+    double opp {percentWidth * camera.viewPlaneWidth / 2.0f};
+    double adj {camera.viewPlaneDist};
+    double ratio {opp / adj};
     return sqrt((cameraToIntersection.x * cameraToIntersection.x + cameraToIntersection.y * cameraToIntersection.y) / (1 + ratio * ratio));
 }

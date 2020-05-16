@@ -27,6 +27,8 @@ public:
 
 private:
     double getPerpendicularDistanceFromCamera(const Vec2& point, double percentWidth);
+    
+    const std::vector<Wall>& walls;
 };
 
 #endif /* Raycaster_hpp */

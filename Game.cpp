@@ -18,27 +18,14 @@ Game::Game():
         {          worldMax, {0.0f, worldMax.y}},
         {{0.0f, worldMax.y}, {0.0f,       0.0f}}
     },
-    walls
-    {
-        // area bounding box
-        { { {  10.0f,  10.0f }, { 210.0f,  10.0f } }, 10.0f, {   0,   0, 255 }, 2 },
-        { { { 210.0f,  10.0f }, { 210.0f, 210.0f } }, 10.0f, {   0,   0, 255 }, 2 },
-        { { { 210.0f, 210.0f }, {  10.0f, 210.0f } }, 10.0f, {   0,   0, 255 }, 2 },
-        { { {  10.0f, 210.0f }, {  10.0f,  10.0f } }, 10.0f, {   0,   0, 255 }, 2 },
-        // red wall
-        { { { 190.0f, 190.0f }, { 140.0f, 170.0f } }, 10.0f, { 255,   0,   0 }, 3 },
-        // purple/textured wall
-        { { {  20.0f,  60.0f }, {  40.0f,  90.0f } }, 10.0f, { 255,   0, 255 }, 1 },
-        { { {  40.0f,  90.0f }, {  70.0f,  70.0f } }, 10.0f, { 255,   0, 255 }, 1 },
-        { { {  70.0f,  70.0f }, {  50.0f,  40.0f } }, 10.0f, { 255,   0, 255 }, 1 },
-        { { {  50.0f,  40.0f }, {  20.0f,  60.0f } }, 10.0f, { 255,   0, 255 }, 1 },
-    },
     camera({60.0f, 15.0f}),
     frm(true),
-    bspr(g, camera, walls, worldBounds, textures),
+    bspr(g, camera, worldBounds, textures),
     rc(g, camera, walls, worldBounds, textures),
     pActiveRenderer{&bspr}
 {
+    // load textures
+    
     textures.push_back(Graphics::LoadTexture("brick.bmp", true));
     textures.push_back(Graphics::LoadTexture("brick_markedup.bmp", true));
     textures.push_back(Graphics::LoadTexture("stripes.bmp", true));
@@ -46,6 +33,36 @@ Game::Game():
     Surface xorSurface(256, 256);
     xorSurface.FillXorPattern();
     textures.push_back(std::move(xorSurface));
+    
+    // load walls
+    
+    if (loadFromFile)
+    {
+        std::vector<Line> lines;
+        DxfLoader dxfLoader("walls.dxf", lines);
+        for (const Line& l : lines)
+            walls.push_back({l, 10.0f, Colors::Cyan, 0});
+    }
+    else
+    {
+        walls =
+        {
+            // area bounding box
+            { { {  10.0f,  10.0f }, { 210.0f,  10.0f } }, 10.0f,    Colors::Blue, 2 },
+            { { { 210.0f,  10.0f }, { 210.0f, 210.0f } }, 10.0f,    Colors::Blue, 2 },
+            { { { 210.0f, 210.0f }, {  10.0f, 210.0f } }, 10.0f,    Colors::Blue, 2 },
+            { { {  10.0f, 210.0f }, {  10.0f,  10.0f } }, 10.0f,    Colors::Blue, 2 },
+            // red wall
+            { { { 190.0f, 190.0f }, { 140.0f, 170.0f } }, 10.0f,     Colors::Red, 3 },
+            // purple/textured wall
+            { { {  20.0f,  60.0f }, {  40.0f,  90.0f } }, 10.0f, Colors::Magenta, 1 },
+            { { {  40.0f,  90.0f }, {  70.0f,  70.0f } }, 10.0f, Colors::Magenta, 1 },
+            { { {  70.0f,  70.0f }, {  50.0f,  40.0f } }, 10.0f, Colors::Magenta, 1 },
+            { { {  50.0f,  40.0f }, {  20.0f,  60.0f } }, 10.0f, Colors::Magenta, 1 },
+        };
+    }
+    
+    bspr.ProcessWalls(walls);
 }
 
 bool Game::ProcessFrame()
@@ -88,5 +105,24 @@ void Game::HandleKeys()
             pActiveRenderer = &rc;
         else
             pActiveRenderer = &bspr;
+    }
+    
+    if (i.GetSFirstPressed())
+    {
+        pActiveRenderer->ShowDrawing();
+    }
+    if (i.GetTFirstPressed())
+    {
+        bspr.ToggleDrawTextures();
+        rc.ToggleDrawTextures();
+    }
+    if (i.GetAFirstPressed())
+    {
+        bspr.ToggleAffineTextureMapping();
+    }
+    if (i.GetBFirstPressed())
+    {
+        bspr.ToggleBrightnessAdjustment();
+        rc.ToggleBrightnessAdjustment();
     }
 }

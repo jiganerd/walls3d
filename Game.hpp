@@ -19,6 +19,7 @@
 #include "Camera.hpp"
 #include "BspRenderer.hpp"
 #include "Raycaster.hpp"
+#include "DxfLoader.hpp"
 
 class Game
 {
@@ -28,10 +29,12 @@ public:
     
 private:
     void HandleKeys();
+    
+    bool loadFromFile {true};
 
     const Vec2 worldMax;
     const std::vector<Line> worldBounds;
-    const std::vector<Wall> walls;
+    std::vector<Wall> walls;
     std::vector<Surface> textures;
     Graphics g;
     Camera camera;

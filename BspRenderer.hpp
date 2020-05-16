@@ -18,17 +18,20 @@ class BspRenderer : public Renderer
 public:
     BspRenderer(Graphics& g,
                 const Camera& camera,
-                const std::vector<Wall>& walls,
                 const std::vector<Line>& worldBounds,
                 const std::vector<Surface>& textures);
     ~BspRenderer() = default;
 
+    void ProcessWalls(const std::vector<Wall>& walls);
+    
     void RenderScene() override;
     void RenderMap() override;
     
+    void ToggleAffineTextureMapping() { affineTextureMapping = !affineTextureMapping; }
+    
 private:
     
-    void RenderWall(const Wall& wall);
+    void RenderWall(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
     double getPerpendicularDistanceFromCameraByAngle(const Vec2& point, double angleFromCamera);
     double getAngleFromCamera(const Vec2& location);
     uint32_t getScreenXFromAngle(double angle);

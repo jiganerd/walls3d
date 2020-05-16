@@ -25,7 +25,12 @@ public:
     bool GetStrafeLeft() { return strafeLeft; }
     bool GetStrafeRight() { return strafeRight; }
     bool GetShiftPressed() { return shiftPressed; }
+    
     bool GetTabFirstPressed() { return tabFirstPressed; }
+    bool GetSFirstPressed() { return sFirstPressed; }
+    bool GetTFirstPressed() { return tFirstPressed; }
+    bool GetAFirstPressed() { return aFirstPressed; }
+    bool GetBFirstPressed() { return bFirstPressed; }
     
 private:
     bool moveForward = false;
@@ -35,7 +40,12 @@ private:
     bool strafeLeft = false;
     bool strafeRight = false;
     bool shiftPressed = false;
+    
     bool tabFirstPressed = false;
+    bool sFirstPressed = false;
+    bool tFirstPressed = false;
+    bool aFirstPressed = false;
+    bool bFirstPressed = false;
 };
 
 #endif /* Input_hpp */

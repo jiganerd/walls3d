@@ -9,6 +9,29 @@
 #ifndef DxfLoader_hpp
 #define DxfLoader_hpp
 
-#include <stdio.h>
+#include "dxflib/dl_dxf.h"
+#include "dxflib/dl_creationadapter.h"
+#include "Line.hpp"
+
+class DxfLoader
+{
+public:
+    DxfLoader(std::string filename, std::vector<Line>& lines);
+    
+private:
+    class DxfFilter : public DL_CreationAdapter
+    {
+    public:
+        DxfFilter(std::vector<Line>& lines);
+        
+        virtual void addLine(const DL_LineData& d);
+        
+    private:
+        std::vector<Line>& lines;
+    };
+    
+    DxfFilter f;
+    std::unique_ptr<DL_Dxf> pDxf;
+};
 
 #endif /* DxfLoader_hpp */
