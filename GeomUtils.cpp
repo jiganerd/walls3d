@@ -46,6 +46,79 @@ bool GeomUtils::FindRayLineIntersection(const Line& ray, const Line& line, Vec2&
     return FindRayLineSegIntersection(true, false, ray, line, intersection, t, dummy);
 }
 
+bool GeomUtils::FindLineLineIntersection(const Line& l1, const Line& l2, Vec2& intersection)
+{
+    bool intersectionFound = true;
+    
+    // handle undefined slope for line 1
+    if (l1.p1.x == l1.p2.x)
+    {
+        // parallel, possibly overlapping, lines - no clear intersection
+        if (l2.p1.x == l2.p2.x)
+        {
+            intersectionFound = false;
+        }
+        else
+        {
+            // we cannot calculate the (undefined) slope, so do something else
+            intersection.x = l1.p1.x;
+            
+            // get l2 into the form: y = m2*x + b2
+            double m2 = GetSlope(l2);
+            double b2 = GetYIntercept(m2, l2.p1);
+            
+            // y = mx + b for line 2
+            intersection.y = m2*intersection.x + b2;
+        }
+    }
+    // handle undefined slope for line 1
+    else if (l2.p1.x == l2.p2.x)
+    {
+        // (note that we've already checked the case for both line 1 and line 2
+        // being parallel lines)
+        
+        // we cannot calculate the (undefined) slope, so do something else
+        intersection.x = l2.p1.x;
+        
+        // get l1 into the form: y = m1*x + b1
+        double m1 = GetSlope(l1);
+        double b1 = GetYIntercept(m1, l1.p1);
+        
+        // y = mx + b for line 1
+        intersection.y = m1*intersection.x + b1;
+    }
+    // handle the regular case
+    else
+    {
+        // get l1 into the form: y = m1*x + b1
+        double m1 = GetSlope(l1);
+        double b1 = GetYIntercept(m1, l1.p1);
+        
+        // get l2 into the form: y = m2*x + b2
+        double m2 = GetSlope(l2);
+        double b2 = GetYIntercept(m2, l2.p1);
+        
+        // parallel, possibly overlapping, lines - no clear intersection
+        if (m1 == m2)
+        {
+            intersectionFound = false;
+        }
+        else
+        {
+            // find the intersection of the lines with this equation:
+            //           y1 = y2
+            //    m1*x + b1 = m2*x + b2 (and there is no distinction between x1 and x2)
+            //  m1*x - m2*x = b2 - b1
+            //            x = (b2 - b1) / (m1 - m2)
+            intersection.x = (b2 - b1) / (m1 - m2);
+            // now plugging in x for line 1: y = m1*x + b1
+            intersection.y = m1*intersection.x + b1;
+        }
+    }
+    
+    return intersectionFound;
+}
+
 double GeomUtils::AngleBetween(const Vec2& v1, const Vec2& v2)
 {
     // could also be asin(v1.cross(v2) / (v1.Mag() * v2.Mag()))
@@ -104,4 +177,19 @@ bool GeomUtils::FindRayLineSegIntersection(bool rayIsActuallyLine, bool lineSegI
     }
     
     return intersectionFound;
+}
+
+double GeomUtils::GetSlope(const Vec2& a, const Vec2& b)
+{
+    return ((b.y - a.y) / (b.x - a.x));
+}
+
+double GeomUtils::GetSlope(const Line& l)
+{
+    return GetSlope(l.p1, l.p2);
+}
+
+double GeomUtils::GetYIntercept(double slope, const Vec2& a)
+{
+    return (a.y - slope * a.x);
 }

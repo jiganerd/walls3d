@@ -37,18 +37,18 @@ public:
     bool IsBehind(const Vec2& p) const;
     bool IsBehind(const Line& l) const;
 
-	const float viewPlaneWidth {5}; // maps to screen width
-	const float viewPlaneDist {5};
+	const float viewPlaneWidth {5.0f}; // maps to screen width
+	const float viewPlaneDist {5.0f};
 
     Vec2 location;
 
 	// relative to location
 	// magnitude represents distance to view plane
-	Vec2 dir {0, viewPlaneDist};
+	Vec2 dir {0.0f, viewPlaneDist};
 
 	// a vector that starts at the end of the "dir" vector,
 	// and is always perpendicular to it
-	Vec2 halfViewPlane {-viewPlaneWidth / 2, 0};
+	Vec2 halfViewPlane {-viewPlaneWidth / 2.0f, 0.0f};
 
 	// normalized versions of the above angles, just as an optimization
 	Vec2 dirN, halfViewPlaneN;
