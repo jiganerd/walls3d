@@ -19,14 +19,16 @@ public:
     void Mark();
     float GetFrameTimeSecs() { return frameTimeSecs; }
 
-    static constexpr float PrintEverySecs = 1.0f;
+    static constexpr float PrintEverySecs {1.0f};
 
 private:
-    bool printFps;
-    // time it took to render the last frame, in secs
-    float frameTimeSecs = 0.100; // (something reasonable before the first frame is rendered)
+    const bool printFps;
+    bool firstMark;
+    // time it took to render the last frame (only!), in secs
+    float frameTimeSecs;
     Uint32 lastClockTicks;
-    float secsUntilPrint = PrintEverySecs;
+    float secsUntilPrint;
+    uint32_t framesDrawnSincePrint;
 };
 
 #endif /* FrameRateMgr_hpp */
