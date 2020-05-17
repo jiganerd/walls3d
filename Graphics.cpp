@@ -100,11 +100,17 @@ void Graphics::DrawLine(const Vec2& v1, const Vec2& v2, const Color& c)
 {
     DrawLine(v1.x, v1.y, v2.x, v2.y, c);
 }
-// taken from CS480 homework!
-// it is not perfect - it does not line up perfectly with the rasterization rules in
-// the triangle rasterization functions (which *are* perfect!)
+
+// taken from CS480 homework! (it's not perfect...)
 void Graphics::DrawLine(float x1, float y1, float x2, float y2, const Color& c)
 {
+    // a lazy man's clipping
+    if ((x1 < 0) || (x1 > ScreenWidth - 1) ||
+        (x2 < 0) || (x2 > ScreenWidth - 1) ||
+        (y1 < 0) || (y1 > ScreenHeight - 1) ||
+        (y2 < 0) || (y2 > ScreenHeight - 1))
+        return; // f it!
+    
     // if we've been passed a single point, don't bother drawing a line
     if (x1 == x2 && y1 == y2)
     {
@@ -112,8 +118,6 @@ void Graphics::DrawLine(float x1, float y1, float x2, float y2, const Color& c)
     }
     else
     {
-        int i;
-        
         float x = x1, y = y1;
         
         int numPix; // the number of times to iterate
@@ -129,7 +133,7 @@ void Graphics::DrawLine(float x1, float y1, float x2, float y2, const Color& c)
         float deltaY = static_cast<float>(distY) / static_cast<float>(numPix);
         
         // draw the line
-        for (i = 0; i < numPix; i++)
+        for (int i = 0; i < numPix; i++)
         {
             PutPixel(Rast(x), Rast(y), c);
             x += deltaX;
