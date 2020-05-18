@@ -110,7 +110,7 @@ void BspRenderer::RenderWall(const Wall &wall, const BspTree::BspNodeDebugInfo& 
                 textureXPercentageIncrement = (textureXPercentageP2 - textureXPercentageP1) / static_cast<double>(screenXDifference);
             }
             
-            for (uint32_t screenX = screenXP1; screenX </*=?*/ screenXP2; screenX++)
+            for (uint32_t screenX = screenXP1; screenX <= screenXP2; screenX++)
             {
                 if (!affineTextureMapping)
                 {
