@@ -1,6 +1,6 @@
 //
 //  Vec2.hpp
-//  engine3d
+//  walls3d
 //
 //  Created by Brian Dolan on 4/24/20.
 //  Copyright © 2020 Brian Dolan. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  Wall.hpp
-//  BspTree
+//  walls3d
 //
 //  Created by Brian Dolan on 5/11/20.
 //  Copyright © 2020 Brian Dolan. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  Camera.cpp
-//  BspTree
+//  walls3d
 //
 //  Created by Brian Dolan on 5/12/20.
 //  Copyright © 2020 Brian Dolan. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  FrameRateMgr.hpp
-//  engine3d
+//  walls3d
 //
 //  Created by Brian Dolan on 5/8/20.
 //  Copyright © 2020 Brian Dolan. All rights reserved.
