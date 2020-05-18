@@ -30,11 +30,11 @@ void Raycaster::RenderScene()
     static constexpr double infinity {std::numeric_limits<double>::infinity()};
 
     // -1 to 1 as we draw across the screen
-    double percentWidth = -1.0f;
-    const double percentWidthIncrement = 2.0f / g.ScreenWidth;
+    double percentWidth {-1.0f};
+    const double percentWidthIncrement {2.0f / g.ScreenWidth};
     
     // loop through columns on the screen
-    for (uint32_t column = 0; column < g.ScreenWidth; column++)
+    for (uint32_t column {0}; column < g.ScreenWidth; column++)
     {
         // for this current column, figure out the corresponding point
         // on the view plane
@@ -56,7 +56,7 @@ void Raycaster::RenderScene()
             double u;
             if (GeomUtils::FindRayLineSegIntersection(ray, wall.seg, intersection, u))
             {
-                double distanceToIntersection {getPerpendicularDistanceFromCamera(intersection, percentWidth)};
+                double distanceToIntersection {GetPerpendicularDistanceFromCamera(intersection, percentWidth)};
                 
                 // draw this wall intersection only if it is closer than any other
                 // wall intersections drawn so far
@@ -77,7 +77,7 @@ void Raycaster::RenderScene()
         // draw the closest wall
         if (closestWallPtr)
             RenderColumn(column,
-                         getColumnHeightByDistance(closestWallDistance, closestWallPtr->height),
+                         GetColumnHeightByDistance(closestWallDistance, closestWallPtr->height),
                          closestWallPtr->c,
                          closestWallPtr->textureNum,
                          closestWallU);
@@ -99,7 +99,7 @@ void Raycaster::RenderMap()
     RenderMapCamera();
 }
 
-double Raycaster::getPerpendicularDistanceFromCamera(const Vec2& point, double percentWidth)
+double Raycaster::GetPerpendicularDistanceFromCamera(const Vec2& point, double percentWidth)
 {
     // see my notebook notes for the math here
     // this "perpendicular distance" equation prevents the fisheye effect that

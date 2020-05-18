@@ -70,7 +70,7 @@ public:
     }
     _Vec2 Norm() const
     {
-        T mag = Mag();
+        T mag {Mag()};
         return _Vec2(x/mag, y/mag);
     }
     T operator*(const _Vec2& rhs) const // dot product
@@ -91,6 +91,6 @@ public:
     T x, y;
 };
 
-typedef _Vec2<float> Vec2;
+typedef _Vec2<double> Vec2;
 
 #endif /* Vec2_hpp */

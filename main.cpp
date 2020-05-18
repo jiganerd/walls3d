@@ -7,8 +7,6 @@
 //
 
 // TODO:
-// fix frame rate manager
-// consistent style: use uniform init., capitalization of funcs, stdint vs. other style, floats vs. doubles, X.0f style for floating point
 // clipping on map drawing
 // deal with split wall texturing
 
@@ -19,7 +17,7 @@ int main(int argc, const char * argv[])
 {
     Game g;
     
-    bool quit = false;
+    bool quit {false};
     while (!quit)
     {
         quit = g.ProcessFrame();

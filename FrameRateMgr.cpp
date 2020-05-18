@@ -22,10 +22,10 @@ FrameRateMgr::FrameRateMgr(bool printFps):
 
 void FrameRateMgr::Mark()
 {
-    Uint32 nowClockTicks = SDL_GetTicks();
+    Uint32 nowClockTicks {SDL_GetTicks()};
     
     if (!firstMark)
-        frameTimeSecs = static_cast<float>(nowClockTicks - lastClockTicks) / 1000.0f;
+        frameTimeSecs = static_cast<double>(nowClockTicks - lastClockTicks) / 1000.0f;
     
     lastClockTicks = nowClockTicks;
 
@@ -34,11 +34,11 @@ void FrameRateMgr::Mark()
     {
         secsUntilPrint -= frameTimeSecs;
         framesDrawnSincePrint++;
-        if (secsUntilPrint <= 0)
+        if (secsUntilPrint <= 0.0f)
         {
             // we could simply print frameTimeSecs, but that represents only the frame
             // it is better if we show an average since the last print
-            std::cout << "FPS: " << static_cast<int>(static_cast<float>(framesDrawnSincePrint) / PrintEverySecs) << " frames/s" << std::endl;
+            std::cout << "FPS: " << static_cast<int>(static_cast<double>(framesDrawnSincePrint) / PrintEverySecs) << " frames/s" << std::endl;
 
             secsUntilPrint = PrintEverySecs;
             framesDrawnSincePrint = 0;

@@ -80,7 +80,7 @@ BspTree::BspNode::BspNode(BspTree* pOwnerTree, const Wall& wall, const std::vect
     debugInfo.ExtendMapLineToSectionBounds(wall.seg, sectionBounds);
     
     // append the current wall's line to the boundaries of the children nodes
-    vector<Line> sectionBoundsForChildren = sectionBounds;
+    vector<Line> sectionBoundsForChildren {sectionBounds};
     sectionBoundsForChildren.push_back(wall.seg);
     
     // now do the split for realsies

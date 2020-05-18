@@ -30,7 +30,7 @@ public:
 private:
     void HandleKeys();
     
-    bool loadFromFile {true};
+    static constexpr bool LoadFromFile {true};
 
     const Vec2 worldMax;
     const std::vector<Line> worldBounds;

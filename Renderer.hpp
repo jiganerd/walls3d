@@ -35,10 +35,9 @@ public:
 protected:
     void BeginRender();
     void EndRender();
-    double getColumnHeightByDistance(double dist, double height);
+    double GetColumnHeightByDistance(double dist, double height);
     void RenderColumn(uint32_t screenX, double height, Color c, uint32_t textureNum, double textureXPercentage);
-    uint32_t mapPercentageToRange(double percentage, uint32_t rangeHigh);
-    inline static uint32_t Rast(double n);
+    uint32_t MapPercentageToRange(double percentage, uint32_t rangeHigh);
     
     void RenderMapBounds();
     void RenderMapCamera();

@@ -31,14 +31,14 @@ public:
     Camera(const Vec2& location);
     ~Camera() = default;
     
-    void rotate(double angleRad);
-    void moveForward(double distance);
-    void strafe(double distanceToRight);
+    void Rotate(double angleRad);
+    void MoveForward(double distance);
+    void Strafe(double distanceToRight);
     bool IsBehind(const Vec2& p) const;
     bool IsBehind(const Line& l) const;
 
-	const float viewPlaneWidth {5.0f}; // maps to screen width
-	const float viewPlaneDist {5.0f};
+	const double viewPlaneWidth {5.0f}; // maps to screen width
+	const double viewPlaneDist {5.0f};
 
     Vec2 location;
 
@@ -55,12 +55,12 @@ public:
 
 	// (cached upfront during creation of camera so this doesn't have to be
 	// computed over and over in BSP rendering algorithm)
-	float leftmostVisibleAngle, rightmostVisibleAngle;
+	double leftmostVisibleAngle, rightmostVisibleAngle;
 	Vec2 leftmostViewPlaneEnd, rightmostViewPlaneEnd, viewPlaneMiddle;
 
 private:
-    void updateNormalizedVectors();
-    void updateViewPlaneVectors();
+    void UpdateNormalizedVectors();
+    void UpdateViewPlaneVectors();
 };
 
 #endif /* Camera_hpp */

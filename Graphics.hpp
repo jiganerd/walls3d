@@ -11,6 +11,7 @@
 
 #include <string>
 #include <cmath>
+#include <cstdint>
 #include <SDL2/SDL.h>
 #include "Color.hpp"
 #include "Vec2.hpp"
@@ -31,14 +32,14 @@ public:
     void BeginFrame();
     void EndFrame();
     static Surface LoadTexture(std::string filename, bool sideways = false);
-    void PutPixel(int x, int y, int r, int g, int b);
-    void PutPixel(int x, int y, const Color& c);
-    // these follow triangle rasterization rules described at
+    void PutPixel(int32_t x, int32_t y, int32_t r, int32_t g, int32_t b);
+    void PutPixel(int32_t x, int32_t y, const Color& c);
+    // this follows triangle rasterization rules described at
     // https://docs.microsoft.com/en-us/windows/win32/direct3d11/d3d10-graphics-programming-guide-rasterizer-stage-rules
-    inline static int Rast(float n) { return static_cast<int>(ceil(n - 0.5f)); };
+    inline static int32_t Rast(double n) { return static_cast<int32_t>(ceil(n - 0.5f)); };
     void DrawLine(const Vec2& v1, const Vec2& v2, const Color& c);
-    void DrawLine(float x1, float y1, float x2, float y2, const Color& c);
-    unsigned int* GetScreenBuffer();
+    void DrawLine(double x1, double y1, double x2, double y2, const Color& c);
+    uint32_t* GetScreenBuffer();
     ~Graphics();
     
 private:
@@ -52,7 +53,7 @@ private:
         std::string msg;
     };
 
-    static Color GetSDLSurfaceColor(const SDL_Surface& surface, int x, int y);
+    static Color GetSDLSurfaceColor(const SDL_Surface& surface, uint32_t x, uint32_t y);
 
     SDL_Window* pWindow;
     SDL_Renderer* pRenderer;
@@ -60,8 +61,8 @@ private:
     Surface screen;
     
 public:
-    static constexpr unsigned int ScreenWidth = 800u;
-    static constexpr unsigned int ScreenHeight = 600u;
+    static constexpr uint32_t ScreenWidth {800u};
+    static constexpr uint32_t ScreenHeight {600u};
 };
 
 #endif /* Graphics_hpp */

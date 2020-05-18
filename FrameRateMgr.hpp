@@ -9,25 +9,23 @@
 #ifndef FrameRateMgr_hpp
 #define FrameRateMgr_hpp
 
-#include <ctime>
-
 class FrameRateMgr
 {
 public:
     FrameRateMgr(bool printFps = false);
     ~FrameRateMgr() = default;
     void Mark();
-    float GetFrameTimeSecs() { return frameTimeSecs; }
+    double GetFrameTimeSecs() { return frameTimeSecs; }
 
-    static constexpr float PrintEverySecs {1.0f};
+    static constexpr double PrintEverySecs {1.0f};
 
 private:
     const bool printFps;
     bool firstMark;
     // time it took to render the last frame (only!), in secs
-    float frameTimeSecs;
+    double frameTimeSecs;
     Uint32 lastClockTicks;
-    float secsUntilPrint;
+    double secsUntilPrint;
     uint32_t framesDrawnSincePrint;
 };
 

@@ -16,7 +16,7 @@ Camera::Camera(const Vec2& location):
     location{location}
 {
     // cache the normalized versions of the vectors
-    updateNormalizedVectors();
+    UpdateNormalizedVectors();
     
     // compute angles of extremities of viewable area
     // angles are defined as positive going to the right of the camera direction,
@@ -24,28 +24,28 @@ Camera::Camera(const Vec2& location):
     rightmostVisibleAngle = atan((viewPlaneWidth / 2.0f) / viewPlaneDist);
     leftmostVisibleAngle = -rightmostVisibleAngle;
     
-    updateViewPlaneVectors();
+    UpdateViewPlaneVectors();
 }
 
-void Camera::rotate(double angleRad)
+void Camera::Rotate(double angleRad)
 {
     Mat2 rotMat {Mat2::Rot(angleRad)};
     dir *= rotMat;
     halfViewPlane *= rotMat;
-    updateNormalizedVectors();
-    updateViewPlaneVectors();
+    UpdateNormalizedVectors();
+    UpdateViewPlaneVectors();
 };
 
-void Camera::moveForward(double distance)
+void Camera::MoveForward(double distance)
 {
     location += (dirN * distance);
-    updateViewPlaneVectors();
+    UpdateViewPlaneVectors();
 }
 
-void Camera::strafe(double distanceToRight)
+void Camera::Strafe(double distanceToRight)
 {
     location += (halfViewPlaneN * distanceToRight);
-    updateViewPlaneVectors();
+    UpdateViewPlaneVectors();
 }
 
 bool Camera::IsBehind(const Vec2 &p) const
@@ -58,13 +58,13 @@ bool Camera::IsBehind(const Line &l) const
     return (IsBehind(l.p1) && IsBehind(l.p2));
 }
 
-void Camera::updateNormalizedVectors()
+void Camera::UpdateNormalizedVectors()
 {
     dirN = dir.Norm();
     halfViewPlaneN = halfViewPlane.Norm();
 }
 
-void Camera::updateViewPlaneVectors()
+void Camera::UpdateViewPlaneVectors()
 {
     viewPlaneMiddle = location + dir;
     leftmostViewPlaneEnd = viewPlaneMiddle - halfViewPlane;

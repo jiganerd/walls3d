@@ -26,7 +26,7 @@ public:
     void RenderMap() override;
 
 private:
-    double getPerpendicularDistanceFromCamera(const Vec2& point, double percentWidth);
+    double GetPerpendicularDistanceFromCamera(const Vec2& point, double percentWidth);
     
     const std::vector<Wall>& walls;
 };

@@ -17,7 +17,7 @@ DxfLoader::DxfFilter::DxfFilter(std::vector<Line>& lines):
 void DxfLoader::DxfFilter::addLine(const DL_LineData& d)
 {
     std::cout << " line: {" << d.x1 << ", " << d.y1 << "}, {" << d.x2 << ", " << d.y2 << "}" << std::endl;
-    lines.push_back({{static_cast<float>(d.x1), static_cast<float>(d.y1)}, {static_cast<float>(d.x2), static_cast<float>(d.y2)}});
+    lines.push_back({{static_cast<double>(d.x1), static_cast<double>(d.y1)}, {static_cast<double>(d.x2), static_cast<double>(d.y2)}});
 }
 
 DxfLoader::DxfLoader(std::string filename, std::vector<Line>& lines):

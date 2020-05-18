@@ -27,7 +27,7 @@ public:
     template <typename T>
     static void NormalizeAngle(T& a)
     {
-        constexpr T TwoPi = static_cast<T>(2) * M_PI;
+        constexpr T TwoPi {static_cast<T>(2) * M_PI};
         while (a > TwoPi)
             a -= TwoPi;
         while (a < static_cast<T>(0))

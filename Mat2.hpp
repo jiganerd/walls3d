@@ -16,9 +16,9 @@ public:
     _Mat2() = default;
     _Mat2<T> operator+(const _Mat2<T>& rhs)
     {
-        for (size_t i = 0; i < 2; i++)
+        for (size_t i {0}; i < 2; i++)
         {
-            for (size_t j = 0; j < 2; j++)
+            for (size_t j {0}; j < 2; j++)
             {
                 data[i][j] += rhs[i][j];
             }
@@ -35,12 +35,12 @@ public:
         _Mat2<T> ret;
         
         // loop through rows (r) and columns (c) for the *output* matrix
-        for (size_t r = 0; r < 2; r++)
+        for (size_t r {0}; r < 2; r++)
         {
-            for (size_t c = 0; c < 2; c++)
+            for (size_t c {0}; c < 2; c++)
             {
                 ret.data[r][c] = z;
-                for (size_t i = 0; i < 2; i++)
+                for (size_t i {0}; i < 2; i++)
                     ret.data[r][c] += (data[i][c] * rhs.data[r][i]);
             }
         }
@@ -57,8 +57,8 @@ public:
     }
     static _Mat2<T> Rot(T angle)
     {
-        T s = static_cast<T>(sin(angle));
-        T c = static_cast<T>(cos(angle));
+        T s {static_cast<T>(sin(angle))};
+        T c {static_cast<T>(cos(angle))};
         return
         {
              c, s,
@@ -69,8 +69,8 @@ public:
     ~_Mat2() = default;
     
 private:
-    static constexpr T z = static_cast<T>(0);
-    static constexpr T o = static_cast<T>(1);
+    static constexpr T z {static_cast<T>(0)};
+    static constexpr T o {static_cast<T>(1)};
 public:
     T data[2][2];
 };
@@ -91,6 +91,6 @@ _Vec2<T>& operator*=(_Vec2<T>& lhs, const _Mat2<T>& rhs)
     return lhs;
 }
 
-typedef _Mat2<float> Mat2;
+typedef _Mat2<double> Mat2;
 
 #endif /* Mat2_hpp */

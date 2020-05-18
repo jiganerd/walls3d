@@ -36,7 +36,7 @@ Game::Game():
     
     // load walls
     
-    if (loadFromFile)
+    if (LoadFromFile)
     {
         std::vector<Line> lines;
         DxfLoader dxfLoader("walls.dxf", lines);
@@ -67,7 +67,7 @@ Game::Game():
 
 bool Game::ProcessFrame()
 {
-    bool quit = i.ProcessKeys();
+    bool quit {i.ProcessKeys()};
     
     if (!quit)
     {
@@ -88,15 +88,15 @@ bool Game::ProcessFrame()
 
 void Game::HandleKeys()
 {
-    double moveSpeed = frm.GetFrameTimeSecs() * 75.0f;
-    double rotSpeed = frm.GetFrameTimeSecs() * M_PI / 2.0f;
+    double moveSpeed {frm.GetFrameTimeSecs() * 75.0f};
+    double rotSpeed {frm.GetFrameTimeSecs() * M_PI / 2.0f};
 
-    if (i.GetMoveForward())  camera.moveForward(moveSpeed);
-    if (i.GetMoveBackward()) camera.moveForward(-moveSpeed);
-    if (i.GetRotateLeft())   camera.rotate(-rotSpeed);
-    if (i.GetRotateRight())  camera.rotate(rotSpeed);
-    if (i.GetStrafeLeft())   camera.strafe(-moveSpeed);
-    if (i.GetStrafeRight())  camera.strafe(moveSpeed);
+    if (i.GetMoveForward())  camera.MoveForward(moveSpeed);
+    if (i.GetMoveBackward()) camera.MoveForward(-moveSpeed);
+    if (i.GetRotateLeft())   camera.Rotate(-rotSpeed);
+    if (i.GetRotateRight())  camera.Rotate(rotSpeed);
+    if (i.GetStrafeLeft())   camera.Strafe(-moveSpeed);
+    if (i.GetStrafeRight())  camera.Strafe(moveSpeed);
     
     // swap renderers when tab pressed
     if (i.GetTabFirstPressed())

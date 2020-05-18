@@ -40,25 +40,25 @@ void Renderer::EndRender()
     showDrawing = false;
 }
 
-double Renderer::getColumnHeightByDistance(double dist, double height)
+double Renderer::GetColumnHeightByDistance(double dist, double height)
 {
     return (3.0f * height / dist * static_cast<double>(g.ScreenHeight));
 }
 
 void Renderer::RenderColumn(uint32_t screenX, double height, Color c, uint32_t textureNum, double textureXPercentage)
 {
-    double clippedHeight = (height <= g.ScreenHeight ? height : g.ScreenHeight);
-    double y1Float = static_cast<double>(HalfScreenHeight) - (clippedHeight / 2.0f);
+    double clippedHeight {(height <= g.ScreenHeight ? height : g.ScreenHeight)};
+    double y1Float {static_cast<double>(HalfScreenHeight) - (clippedHeight / 2.0f)};
     
-    uint32_t y1 = Rast(y1Float);
-    uint32_t y2 = Rast(y1Float + clippedHeight);
+    uint32_t y1 {static_cast<uint32_t>(g.Rast(y1Float))};
+    uint32_t y2 {static_cast<uint32_t>(g.Rast(y1Float + clippedHeight))};
     
     // figure out where in the pixel buffer to start, and only do
     // additions from there (avoid multiplication in the drawing loop)
-    uint32_t pixelBufferOffset = y1 * g.ScreenWidth + screenX;
-    unsigned int* pPixelBuffer = g.GetScreenBuffer();
+    uint32_t pixelBufferOffset {y1 * g.ScreenWidth + screenX};
+    uint32_t* pPixelBuffer {g.GetScreenBuffer()};
     
-    double brightness = static_cast<double>(clippedHeight) / static_cast<double>(g.ScreenHeight);
+    double brightness {static_cast<double>(clippedHeight) / static_cast<double>(g.ScreenHeight)};
 
     // if texturing...
     const Surface* pTexture {nullptr};
@@ -73,14 +73,14 @@ void Renderer::RenderColumn(uint32_t screenX, double height, Color c, uint32_t t
 
         // we want to map height to a range of 0 to 1 (u/v coordinates), for use in sampling
         // the texture
-        double textureYPercentageIncrement = 1.0f / height;
+        double textureYPercentageIncrement {1.0f / height};
         
         // figure out the initial y location to start sampling the texture
         // in the simple case, this is 0, but if the camera is very close to the
         // texture, and it actually "starts" above the screen, we have to account
         // for that
-        double heightClippedAboveScreen = (height - clippedHeight) / 2.0f;
-        double textureYPercentage = textureYPercentageIncrement * heightClippedAboveScreen;
+        double heightClippedAboveScreen {(height - clippedHeight) / 2.0f};
+        double textureYPercentage {textureYPercentageIncrement * heightClippedAboveScreen};
         
         // this logic may not be intuitive - we need to "bump" the initial texture lookup value a bit:
         // we actually should be calculating the lookup value based on the y value for the *vertical center*
@@ -88,7 +88,7 @@ void Renderer::RenderColumn(uint32_t screenX, double height, Color c, uint32_t t
         textureYPercentage += textureYPercentageIncrement * (static_cast<double>(y1) + 0.5f - y1Float);
         
         // map textureXPercentage/textureYPercentage to pixel coordinates within the texture
-        texturePixelX = mapPercentageToRange(textureXPercentage, pTexture->Width() - 1);
+        texturePixelX = MapPercentageToRange(textureXPercentage, pTexture->Width() - 1);
         
         texturePixelYIncrement = textureYPercentageIncrement * static_cast<double>(pTexture->Height());
         texturePixelY = textureYPercentage * static_cast<double>(pTexture->Height());
@@ -106,7 +106,7 @@ void Renderer::RenderColumn(uint32_t screenX, double height, Color c, uint32_t t
             c *= brightness;
     }
     
-    for (uint32_t y = y1; y < y2; y++)
+    for (uint32_t y {y1}; y < y2; y++)
     {
         if (drawTextures && textureNum != -1)
         {
@@ -134,18 +134,11 @@ void Renderer::RenderColumn(uint32_t screenX, double height, Color c, uint32_t t
 
 // maps a range of [0.0, 1.0] to [0, rangeHigh]
 // clamps at rangeHigh to account for floating point error
-uint32_t Renderer::mapPercentageToRange(double percentage, uint32_t rangeHigh)
+uint32_t Renderer::MapPercentageToRange(double percentage, uint32_t rangeHigh)
 {
-    uint32_t retVal = static_cast<uint32_t>(percentage * static_cast<double>(rangeHigh + 1));
+    uint32_t retVal {static_cast<uint32_t>(percentage * static_cast<double>(rangeHigh + 1))};
     if (retVal > rangeHigh) retVal = rangeHigh;
     return retVal;
-}
-
-// rasterization rule for how a subpixel (floating point) coordinate
-// maps to a pixel (integer) coordinate
-inline uint32_t Renderer::Rast(double n)
-{
-    return static_cast<uint32_t>(ceil(n - 0.5f));
 }
 
 void Renderer::RenderMapBounds()

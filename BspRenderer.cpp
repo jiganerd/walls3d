@@ -63,10 +63,10 @@ void BspRenderer::RenderWall(const Wall &wall, const BspTree::BspNodeDebugInfo& 
         // at this point, we can safely assume that the p2 vertex of the wall is to the right
         // of the p1 vertex in screen coordinates!
         
-        bool p1IsOnScreen = false, p2IsOnScreen = false;
+        bool p1IsOnScreen {false}, p2IsOnScreen {false};
         uint32_t screenXP1, screenXP2;
         double distP1, distP2;
-        double textureXPercentageP1 = 0.0f, textureXPercentageP2 = 1.0f;
+        double textureXPercentageP1 {0.0f}, textureXPercentageP2 {1.0f};
         
         // get properties for screen x, texture x percentage, and distance for each vertex, with clipping
         p1IsOnScreen = ClipAndGetAttributes(true, wall.seg, screenXP1, distP1, textureXPercentageP1);
@@ -77,12 +77,12 @@ void BspRenderer::RenderWall(const Wall &wall, const BspTree::BspNodeDebugInfo& 
         {
             assert(screenXP1 <= screenXP2);
             
-            double columnHeightP1 = getColumnHeightByDistance(distP1, wall.height);
-            double columnHeightP2 = getColumnHeightByDistance(distP2, wall.height);
+            double columnHeightP1 {GetColumnHeightByDistance(distP1, wall.height)};
+            double columnHeightP2 {GetColumnHeightByDistance(distP2, wall.height)};
             
-            double columnHeight = columnHeightP1;
-            uint32_t screenXDifference = screenXP2 - screenXP1;
-            double columnHeightIncrement = (columnHeightP2 - columnHeightP1) / static_cast<double>(screenXDifference);
+            double columnHeight {columnHeightP1};
+            uint32_t screenXDifference {screenXP2 - screenXP1};
+            double columnHeightIncrement {(columnHeightP2 - columnHeightP1) / static_cast<double>(screenXDifference)};
             
             // (U/Z) / (1/Z) = U/Z * Z = U
             // (U/Z) and (1/Z) can increment linearly as we go across screen X coordinates
@@ -90,20 +90,20 @@ void BspRenderer::RenderWall(const Wall &wall, const BspTree::BspNodeDebugInfo& 
             // distance does not increment linearly!
             // but 1/distance does!
             // (1/Z)
-            const double inverseDistStart = 1.0 / distP1;
-            const double inverseDistEnd = 1.0 / distP2;
-            const double inverseDistIncrement = (inverseDistEnd - inverseDistStart) / static_cast<double>(screenXDifference);
-            double inverseDist = inverseDistStart;
+            const double inverseDistStart {1.0f / distP1};
+            const double inverseDistEnd {1.0f / distP2};
+            const double inverseDistIncrement {(inverseDistEnd - inverseDistStart) / static_cast<double>(screenXDifference)};
+            double inverseDist {inverseDistStart};
             
             // (U/Z)
-            const double textureXPercentageOverDistStart = textureXPercentageP1 / distP1;
-            const double textureXPercentageOverDistEnd = textureXPercentageP2 / distP2;
-            const double textureXPercentageOverDistIncrement = (textureXPercentageOverDistEnd - textureXPercentageOverDistStart) / static_cast<double>(screenXDifference);
-            double textureXPercentageOverDist = textureXPercentageOverDistStart;
+            const double textureXPercentageOverDistStart {textureXPercentageP1 / distP1};
+            const double textureXPercentageOverDistEnd {textureXPercentageP2 / distP2};
+            const double textureXPercentageOverDistIncrement {(textureXPercentageOverDistEnd - textureXPercentageOverDistStart) / static_cast<double>(screenXDifference)};
+            double textureXPercentageOverDist {textureXPercentageOverDistStart};
             
             // this stuff is for affine texture mapping (bad) only
-            double textureXPercentage = 0;
-            double textureXPercentageIncrement = 0;
+            double textureXPercentage {0.0f};
+            double textureXPercentageIncrement {0.0f};
             if ((wall.textureNum != -1) && affineTextureMapping)
             {
                 textureXPercentage = textureXPercentageP1;
@@ -145,28 +145,28 @@ void BspRenderer::RenderWall(const Wall &wall, const BspTree::BspNodeDebugInfo& 
 }
 
 // (angleFromCamera could be figured out, but it is passed in for efficiency, as it has already been calculated)
-double BspRenderer::getPerpendicularDistanceFromCameraByAngle(const Vec2& point, double angleFromCamera)
+double BspRenderer::GetPerpendicularDistanceFromCameraByAngle(const Vec2& point, double angleFromCamera)
 {
-    double euclideanDistance = (point - camera.location).Mag();
+    double euclideanDistance {(point - camera.location).Mag()};
     return euclideanDistance * cos(angleFromCamera);
 }
 
-double BspRenderer::getAngleFromCamera(const Vec2& location)
+double BspRenderer::GetAngleFromCamera(const Vec2& location)
 {
-    Vec2 diffVectN = (location - camera.location).Norm();
-    double absAngleFromCameraDir = GeomUtils::AngleBetweenNorm(camera.dirN, diffVectN);
+    Vec2 diffVectN {(location - camera.location).Norm()};
+    double absAngleFromCameraDir {GeomUtils::AngleBetweenNorm(camera.dirN, diffVectN)};
     
     // we need to do the cross product in order to tell if this angle
     // is to the left of or the right of the camera's direction
     return (camera.dirN.cross(diffVectN) > 0 ? absAngleFromCameraDir : -absAngleFromCameraDir);
 }
 
-uint32_t BspRenderer::getScreenXFromAngle(double angle)
+uint32_t BspRenderer::GetScreenXFromAngle(double angle)
 {
     // (see notebook for the math)
-    double opp = camera.viewPlaneDist * tan(angle);
-    double percentWidth = opp / (camera.viewPlaneWidth / 2);
-    uint32_t screenX = static_cast<uint32_t>(percentWidth * static_cast<double>(HalfScreenWidth)) + HalfScreenWidth;
+    double opp {camera.viewPlaneDist * tan(angle)};
+    double percentWidth {opp / (camera.viewPlaneWidth / 2.0f)};
+    uint32_t screenX {static_cast<uint32_t>(percentWidth * static_cast<double>(HalfScreenWidth)) + HalfScreenWidth};
     
     assert(screenX < g.ScreenWidth);
     
@@ -174,16 +174,16 @@ uint32_t BspRenderer::getScreenXFromAngle(double angle)
 }
 
 // this is kind of a silly function, but it must exist when dealing with unsigned numbers...
-int32_t BspRenderer::unsignedSub(uint32_t n1, uint32_t n2)
+int32_t BspRenderer::UnsignedSub(uint32_t n1, uint32_t n2)
 {
     return (static_cast<int32_t>(n1) - static_cast<int32_t>(n2));
 }
 
 bool BspRenderer::ClipAndGetAttributes(bool leftSide, const Line& wallSeg, uint32_t& screenX, double& dist, double& textureXPercentage)
 {
-    bool pIsOnScreen = false;
-    Vec2 p = (leftSide ? wallSeg.p1 : wallSeg.p2);
-    double angle = getAngleFromCamera(p);
+    bool pIsOnScreen {false};
+    Vec2 p {(leftSide ? wallSeg.p1 : wallSeg.p2)};
+    double angle {GetAngleFromCamera(p)};
     
     // TODO: is it accurate enough to use camera.leftmostVisibleAngle, vs. the angle
     // from a line drawn from camera.location through the "middle" of the first pixel on the
@@ -193,7 +193,7 @@ bool BspRenderer::ClipAndGetAttributes(bool leftSide, const Line& wallSeg, uint3
     if (angle >= camera.leftmostVisibleAngle && angle <= camera.rightmostVisibleAngle)
     {
         pIsOnScreen = true;
-        screenX = getScreenXFromAngle(angle);
+        screenX = GetScreenXFromAngle(angle);
         textureXPercentage = (leftSide ? 0.0f : 1.0f);
     }
     else
@@ -222,7 +222,7 @@ bool BspRenderer::ClipAndGetAttributes(bool leftSide, const Line& wallSeg, uint3
     }
     
     if (pIsOnScreen)
-        dist = getPerpendicularDistanceFromCameraByAngle(p, angle);
+        dist = GetPerpendicularDistanceFromCameraByAngle(p, angle);
     
     return pIsOnScreen;
 }

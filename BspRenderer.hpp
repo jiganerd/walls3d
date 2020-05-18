@@ -32,10 +32,10 @@ public:
 private:
     
     void RenderWall(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
-    double getPerpendicularDistanceFromCameraByAngle(const Vec2& point, double angleFromCamera);
-    double getAngleFromCamera(const Vec2& location);
-    uint32_t getScreenXFromAngle(double angle);
-    int32_t unsignedSub(uint32_t n1, uint32_t n2);
+    double GetPerpendicularDistanceFromCameraByAngle(const Vec2& point, double angleFromCamera);
+    double GetAngleFromCamera(const Vec2& location);
+    uint32_t GetScreenXFromAngle(double angle);
+    int32_t UnsignedSub(uint32_t n1, uint32_t n2);
     bool ClipAndGetAttributes(bool leftSide, const Line& wallSeg, uint32_t& screenX, double& dist, double& textureXPercentage);
 
     void RenderMapDivision(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);

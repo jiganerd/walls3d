@@ -11,31 +11,32 @@
 
 #include <iostream>
 #include <memory>
+#include <cstdint>
 #include "Color.hpp"
 
 class Surface
 {
 public:
-    Surface(int w, int h) :
+    Surface(uint32_t w, uint32_t h) :
         w(w),
         h(h),
-        pPixelBuffer(new unsigned int[w * h])
+        pPixelBuffer(new uint32_t[w * h])
     {}
     Surface(Surface&) = delete;
     Surface(Surface&& s) = default;
-    int Width() const { return w; };
-    int Height() const { return h; };
-    unsigned int* GetPixelBuffer() const { return pPixelBuffer.get(); }
-    Color GetPixel(int x, int y) const;
-    Color GetPixelUV(float u, float v) const;
-    void PutPixel(int x, int y, const Color& c);
+    uint32_t Width() const { return w; };
+    uint32_t Height() const { return h; };
+    uint32_t* GetPixelBuffer() const { return pPixelBuffer.get(); }
+    Color GetPixel(int32_t x, int32_t y) const;
+    Color GetPixelUV(double u, double v) const;
+    void PutPixel(int32_t x, int32_t y, const Color& c);
     void FillXorPattern();
     ~Surface() = default;
     
 private:
-    int w;
-    int h;
-    std::unique_ptr<unsigned int[]> pPixelBuffer;
+    uint32_t w;
+    uint32_t h;
+    std::unique_ptr<uint32_t[]> pPixelBuffer;
 };
 
 #endif /* Surface_hpp */

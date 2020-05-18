@@ -12,7 +12,7 @@
 bool Input::ProcessKeys()
 {
     SDL_Event e;
-    bool altPressed = false;
+    bool altPressed {false};
     tabFirstPressed = false;
     sFirstPressed = false;
     tFirstPressed = false;
@@ -28,7 +28,7 @@ bool Input::ProcessKeys()
         }
         else if ((e.type == SDL_KEYDOWN) || (e.type == SDL_KEYUP))
         {
-            bool keyDown = (e.type == SDL_KEYDOWN);
+            bool keyDown {(e.type == SDL_KEYDOWN)};
             switch (e.key.keysym.sym)
             {
                 case SDLK_ESCAPE:

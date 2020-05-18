@@ -27,8 +27,7 @@ Graphics::Graphics() :
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
         throw SDLException("Error initializating SDL");
     
-    Uint32 windowFlags = SDL_WINDOW_SHOWN;
-    SDL_CreateWindowAndRenderer(ScreenWidth, ScreenHeight, windowFlags, &pWindow, &pRenderer);
+    SDL_CreateWindowAndRenderer(ScreenWidth, ScreenHeight, SDL_WINDOW_SHOWN, &pWindow, &pRenderer);
     if (pWindow == NULL)
         throw SDLException("Window could not be created");
 
@@ -54,7 +53,7 @@ void Graphics::BeginFrame()
 
 void Graphics::EndFrame()
 {
-    if (SDL_UpdateTexture(pScreenTexture, NULL, screen.GetPixelBuffer(), ScreenWidth * sizeof(unsigned int)) < 0)
+    if (SDL_UpdateTexture(pScreenTexture, NULL, screen.GetPixelBuffer(), ScreenWidth * sizeof(uint32_t)) < 0)
         throw SDLException("Could not update screen texture");
     
     if (SDL_RenderCopy(pRenderer, pScreenTexture, NULL, NULL) < 0)
@@ -65,7 +64,7 @@ void Graphics::EndFrame()
 
 Surface Graphics::LoadTexture(std::string filename, bool sideways)
 {
-    SDL_Surface* pSurf = SDL_LoadBMP(filename.c_str());
+    SDL_Surface* pSurf {SDL_LoadBMP(filename.c_str())};
     if (!pSurf)
         throw SDLException("Could not load texture");
    
@@ -74,10 +73,10 @@ Surface Graphics::LoadTexture(std::string filename, bool sideways)
     // load image into pixels array in ARGB format
     // (no problem if this is slow)
     auto pPixelBuffer = s.GetPixelBuffer();
-    int offset = 0;
-    for (int y = 0; y < pSurf->h; y++)
+    uint32_t offset {0};
+    for (uint32_t y {0}; y < pSurf->h; y++)
     {
-        for (int x = 0; x < pSurf->w; x++)
+        for (uint32_t x {0}; x < pSurf->w; x++)
         {
             pPixelBuffer[offset++] = GetSDLSurfaceColor(*pSurf, (sideways ? y : x), (sideways ? x : y));
         }
@@ -86,12 +85,12 @@ Surface Graphics::LoadTexture(std::string filename, bool sideways)
     return s;
 }
 
-void Graphics::PutPixel(int x, int y, int r, int g, int b)
+void Graphics::PutPixel(int32_t x, int32_t y, int32_t r, int32_t g, int32_t b)
 {
     PutPixel(x, y, Color(r, g, b));
 }
 
-void Graphics::PutPixel(int x, int y, const Color& c)
+void Graphics::PutPixel(int32_t x, int32_t y, const Color& c)
 {
     screen.PutPixel(x, y, c);
 }
@@ -102,7 +101,7 @@ void Graphics::DrawLine(const Vec2& v1, const Vec2& v2, const Color& c)
 }
 
 // taken from CS480 homework! (it's not perfect...)
-void Graphics::DrawLine(float x1, float y1, float x2, float y2, const Color& c)
+void Graphics::DrawLine(double x1, double y1, double x2, double y2, const Color& c)
 {
     // a lazy man's clipping
     if ((x1 < 0) || (x1 > ScreenWidth - 1) ||
@@ -118,22 +117,22 @@ void Graphics::DrawLine(float x1, float y1, float x2, float y2, const Color& c)
     }
     else
     {
-        float x = x1, y = y1;
+        double x {x1}, y {y1};
         
-        int numPix; // the number of times to iterate
-        int distX = Rast(x2) - Rast(x1); // the dimensions of the line
-        int distY = Rast(y2) - Rast(y1);
+        uint32_t numPix; // the number of times to iterate
+        int32_t distX {Rast(x2) - Rast(x1)}; // the dimensions of the line
+        int32_t distY {Rast(y2) - Rast(y1)};
         
         // should we scan horizontally or vertically?
         if (abs(distX) > abs(distY)) numPix = abs(distX);
         else numPix = abs(distY);
         
         // calculate the incremental x and y values (can be pos. or neg.)
-        float deltaX = static_cast<float>(distX) / static_cast<float>(numPix);
-        float deltaY = static_cast<float>(distY) / static_cast<float>(numPix);
+        double deltaX {static_cast<double>(distX) / static_cast<double>(numPix)};
+        double deltaY {static_cast<double>(distY) / static_cast<double>(numPix)};
         
         // draw the line
-        for (int i = 0; i < numPix; i++)
+        for (uint32_t i {0}; i < numPix; i++)
         {
             PutPixel(Rast(x), Rast(y), c);
             x += deltaX;
@@ -143,17 +142,17 @@ void Graphics::DrawLine(float x1, float y1, float x2, float y2, const Color& c)
     }
 }
 
-unsigned int* Graphics::GetScreenBuffer()
+uint32_t* Graphics::GetScreenBuffer()
 {
     return screen.GetPixelBuffer();
 }
 
-Color Graphics::GetSDLSurfaceColor(const SDL_Surface& surface, int x, int y)
+Color Graphics::GetSDLSurfaceColor(const SDL_Surface& surface, uint32_t x, uint32_t y)
 {
-    const SDL_PixelFormat* pPixelFormat = surface.format;
-    unsigned char *pPixels = (unsigned char *)surface.pixels;
+    const SDL_PixelFormat* pPixelFormat {surface.format};
+    uint8_t *pPixels {static_cast<uint8_t*>(surface.pixels)};
     
-    unsigned char* pPixel = &pPixels[((y * surface.w) + x) * pPixelFormat->BytesPerPixel];
+    uint8_t* pPixel {&pPixels[((y * surface.w) + x) * pPixelFormat->BytesPerPixel]};
     
     Uint32 pixel;
     switch (pPixelFormat->BytesPerPixel)

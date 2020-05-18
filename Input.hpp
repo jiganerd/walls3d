@@ -33,19 +33,19 @@ public:
     bool GetBFirstPressed() { return bFirstPressed; }
     
 private:
-    bool moveForward = false;
-    bool moveBackward = false;
-    bool rotateLeft = false;
-    bool rotateRight = false;
-    bool strafeLeft = false;
-    bool strafeRight = false;
-    bool shiftPressed = false;
+    bool moveForward {false};
+    bool moveBackward {false};
+    bool rotateLeft {false};
+    bool rotateRight {false};
+    bool strafeLeft {false};
+    bool strafeRight {false};
+    bool shiftPressed {false};
     
-    bool tabFirstPressed = false;
-    bool sFirstPressed = false;
-    bool tFirstPressed = false;
-    bool aFirstPressed = false;
-    bool bFirstPressed = false;
+    bool tabFirstPressed {false};
+    bool sFirstPressed {false};
+    bool tFirstPressed {false};
+    bool aFirstPressed {false};
+    bool bFirstPressed {false};
 };
 
 #endif /* Input_hpp */
