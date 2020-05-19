@@ -35,6 +35,9 @@ private:
     static double GetSlope(const Vec2& a, const Vec2& b);
     static double GetSlope(const Line& l);
     static double GetYIntercept(double slope, const Vec2& a);
+    
+    // a "negligible" amount for floating-point values
+    static constexpr double fpNegligible {0.00001f};
 };
 
 #endif /* GeomUtils_hpp */

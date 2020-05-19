@@ -34,38 +34,34 @@ BspTree::BspNodeDebugInfo::BspNodeDebugInfo(uint32_t nodeIndex):
 {
 }
 
-// the order of sectionBounds is important - will be traversed in reverse order for the
-// first (!) intersections
 void BspTree::BspNodeDebugInfo::ExtendMapLineToSectionBounds(const Line& line, const vector<Line>& sectionBounds)
 {
     bool forwardIntersectionFound {false};
     bool backwardIntersectionFound {false};
-    for (auto rit = sectionBounds.rbegin(); rit != sectionBounds.rend(); rit++)
+    
+    for (const Line& bound : sectionBounds)
     {
-        const Line& bound {*rit};
-        
         Vec2 intersection;
         double t;
+        // look for the closest intersection forward
         if (GeomUtils::FindRayLineIntersection(line, bound, intersection, t))
         {
-            if (t > 0)
+            Line candidateExtendedLine {line.p2, intersection};
+            if (!forwardIntersectionFound || (candidateExtendedLine.Mag() < extendedLineForMapDrawingForward.Mag()))
             {
-                if (!forwardIntersectionFound)
-                {
-                    forwardIntersectionFound = true;
-                    extendedLineForMapDrawingForward = {line.p2, intersection};
-                }
+                forwardIntersectionFound = true;
+                extendedLineForMapDrawingForward = candidateExtendedLine;
             }
-            else// if (t <= 0)
+        }
+        // look for the closest intersection backward
+        else if (GeomUtils::FindRayLineIntersection({line.p2, line.p1}, bound, intersection, t))
+        {
+            Line candidateExtendedLine {line.p1, intersection};
+            if (!backwardIntersectionFound || (candidateExtendedLine.Mag() < extendedLineForMapDrawingBackward.Mag()))
             {
-                if (!backwardIntersectionFound)
-                {
-                    backwardIntersectionFound = true;
-                    extendedLineForMapDrawingBackward = {line.p1, intersection};
-                }
+                backwardIntersectionFound = true;
+                extendedLineForMapDrawingBackward = candidateExtendedLine;
             }
-            
-            if (forwardIntersectionFound && backwardIntersectionFound) break;
         }
     }
 }

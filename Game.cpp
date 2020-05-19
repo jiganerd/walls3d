@@ -52,9 +52,9 @@ Game::Game():
             { { { 210.0f,  10.0f }, { 210.0f, 210.0f } }, 10.0f,    Colors::Blue, 2 },
             { { { 210.0f, 210.0f }, {  10.0f, 210.0f } }, 10.0f,    Colors::Blue, 2 },
             { { {  10.0f, 210.0f }, {  10.0f,  10.0f } }, 10.0f,    Colors::Blue, 2 },
-            // red wall
+            // standalone wall
             { { { 190.0f, 190.0f }, { 140.0f, 170.0f } }, 10.0f,     Colors::Red, 3 },
-            // purple/textured wall
+            // interior "box"
             { { {  20.0f,  60.0f }, {  40.0f,  90.0f } }, 10.0f, Colors::Magenta, 1 },
             { { {  40.0f,  90.0f }, {  70.0f,  70.0f } }, 10.0f, Colors::Magenta, 1 },
             { { {  70.0f,  70.0f }, {  50.0f,  40.0f } }, 10.0f, Colors::Magenta, 1 },

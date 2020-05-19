@@ -6,6 +6,7 @@
 //  Copyright © 2020 Brian Dolan. All rights reserved.
 //
 
+#include <cmath>
 #include "GeomUtils.hpp"
 
 // follows this convention:
@@ -43,7 +44,7 @@ bool GeomUtils::FindLineLineSegIntersection(const Line& line, const Line& seg, V
 bool GeomUtils::FindRayLineIntersection(const Line& ray, const Line& line, Vec2& intersection, double& t)
 {
     double dummy;
-    return FindRayLineSegIntersection(true, false, ray, line, intersection, t, dummy);
+    return FindRayLineSegIntersection(false, true, ray, line, intersection, t, dummy);
 }
 
 bool GeomUtils::FindLineLineIntersection(const Line& l1, const Line& l2, Vec2& intersection)
@@ -158,23 +159,27 @@ bool GeomUtils::FindRayLineSegIntersection(bool rayIsActuallyLine, bool lineSegI
     Vec2 segStartMinusRayStart {seg.p1 - ray.p1};
     double rCrossS {r.cross(s)};
     
-    t = segStartMinusRayStart.cross(s) / rCrossS;
-    u = segStartMinusRayStart.cross(r) / rCrossS;
-    
-    // for a ray/line segment intersection, the following must be
-    // true (see notes)
-    // 0 <= t, 0 <= u <= 1
-    if (rayIsActuallyLine || (t >= 0))
+    if (fabs(rCrossS) > fpNegligible)
     {
-        if (lineSegIsActuallyLine || ((u >= 0) && (u <= 1)))
+        t = segStartMinusRayStart.cross(s) / rCrossS;
+        u = segStartMinusRayStart.cross(r) / rCrossS;
+        
+        // for a ray/line segment intersection, the following must be
+        // true (see notes)
+        // 0 <= t, 0 <= u <= 1
+        if (rayIsActuallyLine || (t > fpNegligible)) // ...but don't intersect at the very base of the ray
         {
-            intersectionFound = true;
-            
-            // now, figure out the location of the intersection
-            // by plugging in t to the original equation
-            intersection = ray.p1 + (r * t);
+            if (lineSegIsActuallyLine || ((u >= 0.0f) && (u <= 1.0f)))
+            {
+                intersectionFound = true;
+                
+                // now, figure out the location of the intersection
+                // by plugging in t to the original equation
+                intersection = ray.p1 + (r * t);
+            }
         }
     }
+    // else parallel lines
     
     return intersectionFound;
 }

@@ -32,6 +32,10 @@ public:
         *this = *this - rhs;
         return *this;
     }
+    double Mag() const
+    {
+        return ((p2 - p1).Mag());
+    }
     
     Vec2 p1;
     Vec2 p2;
