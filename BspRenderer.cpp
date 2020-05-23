@@ -26,10 +26,13 @@ BspRenderer::BspRenderer(Graphics& g,
 void BspRenderer::ProcessWalls(const std::vector<Wall>& walls)
 {
     bspTree.ProcessWalls(walls, worldBounds);
-    
-    bspTree.Print();
-    cameraNodeIndex = bspTree.Find(camera.location);
-    PrintCameraNodeIndex();
+    OnTreeLoaded();
+}
+
+void BspRenderer::LoadBin(const uint8_t* bytes)
+{
+    bspTree.LoadBin(bytes);
+    OnTreeLoaded();
 }
 
 void BspRenderer::RenderScene()
@@ -168,7 +171,7 @@ uint32_t BspRenderer::GetScreenXFromAngle(double angle)
     double percentWidth {opp / (camera.viewPlaneWidth / 2.0f)};
     uint32_t screenX {static_cast<uint32_t>(percentWidth * static_cast<double>(HalfScreenWidth)) + HalfScreenWidth};
     
-    assert(screenX < g.ScreenWidth);
+    assert(screenX < g.ScreenWidth); // TODO: this triggered once after loading from bin the hard-coded map and moving forward
     
     return screenX;
 }
@@ -243,8 +246,11 @@ void BspRenderer::RenderMap()
 
 void BspRenderer::RenderMapDivision(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
 {
-    RenderMapLine(debugInfo.extendedLineForMapDrawingBackward, Colors::Gray);
-    RenderMapLine(debugInfo.extendedLineForMapDrawingForward, Colors::Gray);
+    if (debugInfo.extendedLinesValid)
+    {
+        RenderMapLine(debugInfo.extendedLineForMapDrawingBackward, Colors::Gray);
+        RenderMapLine(debugInfo.extendedLineForMapDrawingForward, Colors::Gray);
+    }
 }
 
 void BspRenderer::RenderMapWallDark(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
@@ -255,6 +261,16 @@ void BspRenderer::RenderMapWallDark(const Wall& wall, const BspTree::BspNodeDebu
 void BspRenderer::RenderMapWallBright(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo)
 {
     RenderMapLine(wall.seg, debugInfo.mapColor);
+}
+
+void BspRenderer::OnTreeLoaded()
+{
+    cameraNodeIndex = bspTree.Find(camera.location);
+
+    bspTree.Print();
+    PrintCameraNodeIndex();
+    
+    //bspTree.ExportPrint();
 }
 
 void BspRenderer::PrintCameraNodeIndex()

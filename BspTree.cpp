@@ -10,6 +10,7 @@
 #include <cmath>
 #include "BspTree.hpp"
 #include "GeomUtils.hpp"
+#include "Serializer.hpp"
 
 using std::vector;
 using std::cout;
@@ -30,7 +31,8 @@ const vector<Color> BspTree::mapColors
 
 BspTree::BspNodeDebugInfo::BspNodeDebugInfo(uint32_t nodeIndex):
     nodeIndex(nodeIndex),
-    mapColor(BspTree::mapColors[nodeIndex % BspTree::mapColors.size()])
+    mapColor(BspTree::mapColors[nodeIndex % BspTree::mapColors.size()]),
+    extendedLinesValid{false}
 {
 }
 
@@ -64,13 +66,18 @@ void BspTree::BspNodeDebugInfo::ExtendMapLineToSectionBounds(const Line& line, c
             }
         }
     }
+    
+    if (forwardIntersectionFound && backwardIntersectionFound)
+        extendedLinesValid = true;
 }
 
 BspTree::BspNode::BspNode(BspTree* pOwnerTree, const Wall& wall, const std::vector<Wall>& surroundingWalls,
                           const std::vector<Line>& sectionBounds, uint32_t index):
-    wall{wall},
     pOwnerTree{pOwnerTree},
-    debugInfo{BspNodeDebugInfo(index)}
+    wall{wall},
+    debugInfo{BspNodeDebugInfo(index)},
+    pBackNode{nullptr},
+    pFrontNode{nullptr}
 {
     // use the section boundaries for drawing/debugging the BSP tree on a map
     debugInfo.ExtendMapLineToSectionBounds(wall.seg, sectionBounds);
@@ -92,6 +99,15 @@ BspTree::BspNode::BspNode(BspTree* pOwnerTree, const Wall& wall, const std::vect
         pFrontNode = pOwnerTree->CreateNode(frontWalls, sectionBoundsForChildren);
 }
 
+BspTree::BspNode::BspNode(BspTree* pOwnerTree, const uint8_t* bytes, size_t& offset, uint32_t index):
+    pOwnerTree{pOwnerTree},
+    wall{Line(bytes, offset)},
+    debugInfo{BspNodeDebugInfo(index)},
+    pBackNode{pOwnerTree->ParseNode(bytes, offset)},
+    pFrontNode{pOwnerTree->ParseNode(bytes, offset)}
+{
+}
+
 void BspTree::BspNode::Print()
 {
     cout << "Node: " << GetIndex() << " ";
@@ -105,6 +121,20 @@ void BspTree::BspNode::Print()
         pBackNode->Print();
     if (pFrontNode)
         pFrontNode->Print();
+}
+
+void BspTree::BspNode::ExportPrint()
+{
+    cout << "/* Node: " << GetIndex() << " */ "
+         << wall
+         << " /* Back: "
+         << (pBackNode ? std::to_string(pBackNode->GetIndex()) : "--")
+         << ", Front: "
+         << (pFrontNode ? std::to_string(pFrontNode->GetIndex()) : "--")
+         << " */" << endl;
+    
+    pOwnerTree->ExportPrintNode(pBackNode);
+    pOwnerTree->ExportPrintNode(pFrontNode);
 }
 
 int32_t BspTree::BspNode::Find(const Vec2& p)
@@ -157,6 +187,8 @@ BspTree::BspTree():
     numNodes{0},
     pRootNode(nullptr)
 {
+    static_assert((Serializer::Fixed::Unfixed(SerNullNode) > 10000.0f) || (Serializer::Fixed::Unfixed(SerNullNode) < -10000.0f),
+                  "aliasing problem with SerNullNode and a node's (double) coordinate");
 }
 
 void BspTree::ProcessWalls(const std::vector<Wall>& walls, const std::vector<Line>& sectionBounds)
@@ -164,6 +196,12 @@ void BspTree::ProcessWalls(const std::vector<Wall>& walls, const std::vector<Lin
     cout << "Compiling BSP tree...";
     pRootNode = CreateNode(walls, sectionBounds);
     cout << " done." << endl;
+}
+
+void BspTree::LoadBin(const uint8_t* bytes)
+{
+    size_t offset {0};
+    pRootNode = ParseNode(bytes, offset);
 }
 
 std::unique_ptr<BspTree::BspNode> BspTree::CreateNode(const vector<Wall>& walls, const vector<Line>& sectionBounds)
@@ -181,6 +219,14 @@ void BspTree::Print()
         pRootNode->Print();
     else
         cout << "Tree empty" << endl;
+}
+
+void BspTree::ExportPrint()
+{
+    cout << "const unsigned char /*PROGMEM*/ bspTreeBin[] =" << endl;
+    cout << "{" << endl;
+    ExportPrintNode(pRootNode);
+    cout << "};" << endl;
 }
 
 int32_t BspTree::Find(const Vec2& p)
@@ -324,3 +370,24 @@ size_t BspTree::FindBestSplitterWallIndex(const vector<Wall>& walls)
     return bestSplitterWallIndex;
 }
 
+std::unique_ptr<BspTree::BspNode> BspTree::ParseNode(const uint8_t* bytes, size_t& offset)
+{
+    std::unique_ptr<BspTree::BspNode> pNode {nullptr};
+    
+    // "peek" at the data to see whether or not there is a node there
+    int32_t identifier {Serializer::PeekInt(bytes, offset)};
+    if (identifier != SerNullNode)
+        pNode.reset(new BspNode(this, bytes, offset, numNodes++));
+    else
+        offset += 4; // make the "peek" official
+    
+    return pNode;
+}
+
+void BspTree::ExportPrintNode(const std::unique_ptr<BspTree::BspNode>& pNode)
+{
+    if (pNode)
+        pNode->ExportPrint();
+    else
+        cout << Serializer::Ser(SerNullNode) << endl;
+}

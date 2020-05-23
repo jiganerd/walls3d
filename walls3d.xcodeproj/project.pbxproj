@@ -18,11 +18,15 @@
 		AF442939246A2ACA00337B09 /* BspTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AF442930246A2ACA00337B09 /* BspTree.cpp */; };
 		AF44293A246A2ACA00337B09 /* GeomUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AF442933246A2ACA00337B09 /* GeomUtils.cpp */; };
 		AF44293B246A2ACA00337B09 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AF442936246A2ACA00337B09 /* main.cpp */; };
+		AF5DB1C32477428000B1F4E9 /* Serializer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AF5DB1C12477428000B1F4E9 /* Serializer.cpp */; };
 		AFA98882246ECDCC006FA76A /* Raycaster.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFA98880246ECDCC006FA76A /* Raycaster.cpp */; };
 		AFA98885246ECDDE006FA76A /* BspRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFA98883246ECDDE006FA76A /* BspRenderer.cpp */; };
 		AFB38E64246B4E470033D818 /* Camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFB38E63246B4E470033D818 /* Camera.cpp */; };
 		AFD18BD524702E56007916FF /* dl_dxf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFD18BD324702E56007916FF /* dl_dxf.cpp */; };
 		AFD18BD624702E56007916FF /* dl_writer_ascii.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFD18BD424702E56007916FF /* dl_writer_ascii.cpp */; };
+		AFECEB92247846C100635D22 /* BspTreeBin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFECEB90247846C100635D22 /* BspTreeBin.cpp */; };
+		AFECEB9424786A4900635D22 /* Line.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFECEB9324786A4900635D22 /* Line.cpp */; };
+		AFECEB9624786D0200635D22 /* Wall.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AFECEB9524786D0200635D22 /* Wall.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -64,6 +68,8 @@
 		AF442936246A2ACA00337B09 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = main.cpp; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		AF442937246A2ACA00337B09 /* Vec2.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Vec2.hpp; sourceTree = SOURCE_ROOT; };
 		AF442938246A2ACA00337B09 /* Wall.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; path = Wall.hpp; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
+		AF5DB1C12477428000B1F4E9 /* Serializer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Serializer.cpp; sourceTree = SOURCE_ROOT; };
+		AF5DB1C22477428000B1F4E9 /* Serializer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Serializer.hpp; sourceTree = SOURCE_ROOT; };
 		AF633B3A246A2B9D000617F1 /* BspTree.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; lineEnding = 0; path = BspTree.hpp; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
 		AF68736F246766FA00AA777C /* walls3d */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = walls3d; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFA98880246ECDCC006FA76A /* Raycaster.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; lineEnding = 0; path = Raycaster.cpp; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.cpp; };
@@ -74,6 +80,10 @@
 		AFD18BD124702DD1007916FF /* dxflib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = dxflib; sourceTree = SOURCE_ROOT; };
 		AFD18BD324702E56007916FF /* dl_dxf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = dl_dxf.cpp; path = dxflib/dl_dxf.cpp; sourceTree = "<group>"; };
 		AFD18BD424702E56007916FF /* dl_writer_ascii.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = dl_writer_ascii.cpp; path = dxflib/dl_writer_ascii.cpp; sourceTree = "<group>"; };
+		AFECEB90247846C100635D22 /* BspTreeBin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BspTreeBin.cpp; sourceTree = SOURCE_ROOT; };
+		AFECEB91247846C100635D22 /* BspTreeBin.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BspTreeBin.hpp; sourceTree = SOURCE_ROOT; };
+		AFECEB9324786A4900635D22 /* Line.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Line.cpp; sourceTree = SOURCE_ROOT; };
+		AFECEB9524786D0200635D22 /* Wall.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Wall.cpp; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +121,12 @@
 			isa = PBXGroup;
 			children = (
 				AFD18BD124702DD1007916FF /* dxflib */,
+				AF5DB1C12477428000B1F4E9 /* Serializer.cpp */,
+				AF5DB1C22477428000B1F4E9 /* Serializer.hpp */,
+				AF633B3A246A2B9D000617F1 /* BspTree.hpp */,
+				AF442930246A2ACA00337B09 /* BspTree.cpp */,
+				AFECEB90247846C100635D22 /* BspTreeBin.cpp */,
+				AFECEB91247846C100635D22 /* BspTreeBin.hpp */,
 				AF05AE7D246AE53B00D5162A /* Camera.hpp */,
 				AFB38E63246B4E470033D818 /* Camera.cpp */,
 				AF05AE7C246AD69400D5162A /* Utils.hpp */,
@@ -123,15 +139,15 @@
 				AF05AE70246AC67400D5162A /* Mat2.hpp */,
 				AF05AE71246AC67400D5162A /* Surface.cpp */,
 				AF05AE72246AC67400D5162A /* Surface.hpp */,
-				AF633B3A246A2B9D000617F1 /* BspTree.hpp */,
-				AF442930246A2ACA00337B09 /* BspTree.cpp */,
 				AF442932246A2ACA00337B09 /* Color.hpp */,
 				AF442933246A2ACA00337B09 /* GeomUtils.cpp */,
 				AF442934246A2ACA00337B09 /* GeomUtils.hpp */,
 				AF442935246A2ACA00337B09 /* Line.hpp */,
+				AFECEB9324786A4900635D22 /* Line.cpp */,
 				AF442936246A2ACA00337B09 /* main.cpp */,
 				AF442937246A2ACA00337B09 /* Vec2.hpp */,
 				AF442938246A2ACA00337B09 /* Wall.hpp */,
+				AFECEB9524786D0200635D22 /* Wall.cpp */,
 				AF05AE7A246AD03700D5162A /* Game.hpp */,
 				AF05AE79246AD03700D5162A /* Game.cpp */,
 				AF05AE7F246AEA4500D5162A /* Renderer.hpp */,
@@ -209,9 +225,13 @@
 				AF05AE80246AEA4500D5162A /* Renderer.cpp in Sources */,
 				AFA98882246ECDCC006FA76A /* Raycaster.cpp in Sources */,
 				AF05AE75246AC67400D5162A /* Input.cpp in Sources */,
+				AFECEB92247846C100635D22 /* BspTreeBin.cpp in Sources */,
 				AFB38E64246B4E470033D818 /* Camera.cpp in Sources */,
 				AF05AE76246AC67400D5162A /* Surface.cpp in Sources */,
+				AFECEB9424786A4900635D22 /* Line.cpp in Sources */,
 				AF44293A246A2ACA00337B09 /* GeomUtils.cpp in Sources */,
+				AFECEB9624786D0200635D22 /* Wall.cpp in Sources */,
+				AF5DB1C32477428000B1F4E9 /* Serializer.cpp in Sources */,
 				AF05AE7B246AD03700D5162A /* Game.cpp in Sources */,
 				AF3497FE246F86040025BB96 /* DxfLoader.cpp in Sources */,
 				AF44293B246A2ACA00337B09 /* main.cpp in Sources */,

@@ -23,6 +23,7 @@ public:
     ~BspRenderer() = default;
 
     void ProcessWalls(const std::vector<Wall>& walls);
+    void LoadBin(const uint8_t* bytes);
     
     void RenderScene() override;
     void RenderMap() override;
@@ -30,7 +31,7 @@ public:
     void ToggleAffineTextureMapping() { affineTextureMapping = !affineTextureMapping; }
     
 private:
-    
+    // scene rendering
     void RenderWall(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
     double GetPerpendicularDistanceFromCameraByAngle(const Vec2& point, double angleFromCamera);
     double GetAngleFromCamera(const Vec2& location);
@@ -38,10 +39,12 @@ private:
     int32_t UnsignedSub(uint32_t n1, uint32_t n2);
     bool ClipAndGetAttributes(bool leftSide, const Line& wallSeg, uint32_t& screenX, double& dist, double& textureXPercentage);
 
+    // map rendering
     void RenderMapDivision(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
     void RenderMapWallDark(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
     void RenderMapWallBright(const Wall& wall, const BspTree::BspNodeDebugInfo& debugInfo);
     
+    void OnTreeLoaded();
     void PrintCameraNodeIndex();
 
     bool affineTextureMapping {false};

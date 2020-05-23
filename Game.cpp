@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include "Game.hpp"
+#include "BspTreeBin.hpp"
 
 Game::Game():
     worldMax{300, 300},
@@ -41,7 +42,7 @@ Game::Game():
         std::vector<Line> lines;
         DxfLoader dxfLoader("walls.dxf", lines);
         for (const Line& l : lines)
-            walls.push_back({l, 10.0f, Colors::Cyan, 0});
+            walls.emplace_back(l);
     }
     else
     {
@@ -63,6 +64,7 @@ Game::Game():
     }
     
     bspr.ProcessWalls(walls);
+    //bspr.LoadBin(bspTreeBin);
 }
 
 bool Game::ProcessFrame()
