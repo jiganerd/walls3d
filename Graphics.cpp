@@ -74,9 +74,9 @@ Surface Graphics::LoadTexture(std::string filename, bool sideways)
     // (no problem if this is slow)
     auto pPixelBuffer = s.GetPixelBuffer();
     uint32_t offset {0};
-    for (uint32_t y {0}; y < pSurf->h; y++)
+    for (uint32_t y {0}; y < static_cast<uint32_t>(pSurf->h); y++)
     {
-        for (uint32_t x {0}; x < pSurf->w; x++)
+        for (uint32_t x {0}; x < static_cast<uint32_t>(pSurf->w); x++)
         {
             pPixelBuffer[offset++] = GetSDLSurfaceColor(*pSurf, (sideways ? y : x), (sideways ? x : y));
         }

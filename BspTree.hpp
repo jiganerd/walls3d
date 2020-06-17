@@ -14,6 +14,8 @@
 #define BspTree_hpp
 
 #include <vector>
+#include <functional>
+#include <memory>
 #include "Vec2.hpp"
 #include "Wall.hpp"
 #include "Color.hpp"

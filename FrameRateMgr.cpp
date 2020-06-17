@@ -7,7 +7,7 @@
 //
 
 #include <iostream>
-#include <SDL2/SDL.h>
+#include "SDLHeader.hpp"
 #include "FrameRateMgr.hpp"
 
 FrameRateMgr::FrameRateMgr(bool printFps):

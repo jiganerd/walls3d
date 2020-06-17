@@ -7,7 +7,7 @@
 //
 
 #include "Input.hpp"
-#include <SDL2/SDL.h>
+#include "SDLHeader.hpp"
 
 bool Input::ProcessKeys()
 {

@@ -58,7 +58,7 @@ void Renderer::RenderColumn(uint32_t screenX, double height, Color c, uint32_t t
     uint32_t pixelBufferOffset {y1 * g.ScreenWidth + screenX};
     uint32_t* pPixelBuffer {g.GetScreenBuffer()};
     
-    double brightness {static_cast<double>(clippedHeight) / static_cast<double>(g.ScreenHeight)};
+    float brightness {static_cast<float>(clippedHeight) / static_cast<float>(g.ScreenHeight)};
 
     // if texturing...
     const Surface* pTexture {nullptr};

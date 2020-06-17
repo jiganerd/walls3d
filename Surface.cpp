@@ -27,8 +27,8 @@ Color Surface::GetPixel(int32_t x, int32_t y) const
 {
     assert(x >= 0);
     assert(y >= 0);
-    assert(x < w);
-    assert(y < h);
+    assert(x < static_cast<int32_t>(w));
+    assert(y < static_cast<int32_t>(h));
     
     return pPixelBuffer[y * h + x];
 }
@@ -56,7 +56,7 @@ void Surface::PutPixel(int32_t x, int32_t y, const Color& c)
 {
     assert(x >= 0);
     assert(y >= 0);
-    assert(x < w);
-    assert(y < h);
-    pPixelBuffer[y * w + x] = c;
+	assert(x < static_cast<int32_t>(w));
+	assert(y < static_cast<int32_t>(h));
+	pPixelBuffer[y * w + x] = c;
 }

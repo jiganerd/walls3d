@@ -9,6 +9,7 @@
 #ifndef DxfLoader_hpp
 #define DxfLoader_hpp
 
+#include <memory>
 #include "dxflib/dl_dxf.h"
 #include "dxflib/dl_creationadapter.h"
 #include "Line.hpp"
