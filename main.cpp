@@ -6,12 +6,6 @@
 //  Copyright © 2020 Brian Dolan. All rights reserved.
 //
 
-// TODO:
-// clipping on map drawing
-// deal with split wall texturing
-// use "horizontal center of column" for x scans in both bsp and raycast modes and "pre-step" into angles
-// fix assert in GetScreenXFromAngle() triggering
-
 #include <iostream>
 #include "Game.hpp"
 
