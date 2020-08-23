@@ -29,9 +29,9 @@ const vector<Color> BspTree::mapColors
     Colors::Magenta
 };
 
-BspTree::BspNodeDebugInfo::BspNodeDebugInfo(uint32_t nodeIndex):
-    nodeIndex(nodeIndex),
-    mapColor(BspTree::mapColors[nodeIndex % BspTree::mapColors.size()]),
+BspTree::BspNodeDebugInfo::BspNodeDebugInfo(NodeIdx preOrderNodeIndex):
+    preOrderNodeIndex(preOrderNodeIndex),
+    mapColor(BspTree::mapColors[preOrderNodeIndex % BspTree::mapColors.size()]),
     extendedLinesValid{false}
 {
 }
@@ -72,10 +72,12 @@ void BspTree::BspNodeDebugInfo::ExtendMapLineToSectionBounds(const Line& line, c
 }
 
 BspTree::BspNode::BspNode(BspTree* pOwnerTree, const Wall& wall, const std::vector<Wall>& surroundingWalls,
-                          const std::vector<Line>& sectionBounds, uint32_t index):
+                          const std::vector<Line>& sectionBounds, NodeIdx preOrderNodeIndex):
     pOwnerTree{pOwnerTree},
     wall{wall},
-    debugInfo{BspNodeDebugInfo(index)},
+    debugInfo{BspNodeDebugInfo(preOrderNodeIndex)},
+    backNodeIdx{NullNodeIdx},
+    frontNodeIdx{NullNodeIdx},
     pBackNode{nullptr},
     pFrontNode{nullptr}
 {
@@ -89,6 +91,10 @@ BspTree::BspNode::BspNode(BspTree* pOwnerTree, const Wall& wall, const std::vect
     // now do the split for realsies
     vector<Wall> backWalls, frontWalls;
     BspTree::SplitWalls(wall.seg, surroundingWalls, backWalls, frontWalls);
+
+	// NOTE: it is important that, below, the back nodes are created before
+	// the front nodes, in order to have a *preorder* numbering system in
+	// the tree
     
     // now process any/all walls that are in back
     if (backWalls.size() > 0)
@@ -99,12 +105,14 @@ BspTree::BspNode::BspNode(BspTree* pOwnerTree, const Wall& wall, const std::vect
         pFrontNode = pOwnerTree->CreateNode(frontWalls, sectionBoundsForChildren);
 }
 
-BspTree::BspNode::BspNode(BspTree* pOwnerTree, const uint8_t* bytes, size_t& offset, uint32_t index):
+BspTree::BspNode::BspNode(BspTree* pOwnerTree, const uint8_t* bytes, size_t& offset, uint32_t preOrderNodeIndex):
     pOwnerTree{pOwnerTree},
     wall{Line(bytes, offset)},
-    debugInfo{BspNodeDebugInfo(index)},
-    pBackNode{pOwnerTree->ParseNode(bytes, offset)},
-    pFrontNode{pOwnerTree->ParseNode(bytes, offset)}
+    debugInfo{BspNodeDebugInfo(preOrderNodeIndex)},
+    backNodeIdx{Serializer::DeSerUint(bytes, offset)},
+    frontNodeIdx{Serializer::DeSerUint(bytes, offset)},
+    pBackNode{backNodeIdx != NullNodeIdx ? pOwnerTree->ParseNode(bytes, offset) : nullptr},
+    pFrontNode{frontNodeIdx != NullNodeIdx ? pOwnerTree->ParseNode(bytes, offset) : nullptr}
 {
 }
 
@@ -127,6 +135,18 @@ void BspTree::BspNode::ExportPrint()
 {
     cout << "/* Node: " << GetIndex() << " */ "
          << wall
+
+		// also output the "pointers" (array indices) to the child nodes
+        // we have numbered the nodes starting at 0 and incrementing in a preorder
+        // traversal - this means that the number on each node is the same as its
+        // array index in this serialized buffer!
+        // by having these here, the tree can be traversed (quickly) while remaining
+        // in the serialized format (i.e. it does not have to be first translated
+        // into another data structure in RAM) - this is important for the RAM-limited
+        // embedded platform
+		<< Serializer::Ser(pBackNode ? pBackNode->GetIndex() : NullNodeIdx)
+		<< Serializer::Ser(pFrontNode ? pFrontNode->GetIndex() : NullNodeIdx)
+
          << " /* Back: "
          << (pBackNode ? std::to_string(pBackNode->GetIndex()) : "--")
          << ", Front: "
@@ -137,12 +157,12 @@ void BspTree::BspNode::ExportPrint()
     pOwnerTree->ExportPrintNode(pFrontNode);
 }
 
-int32_t BspTree::BspNode::Find(const Vec2& p)
+BspTree::NodeIdx BspTree::BspNode::Find(const Vec2& p)
 {
     if (GeomUtils::GeomUtils::IsPointInFrontOfLine(wall.seg, p))
-        return (pFrontNode ? pFrontNode->Find(p) : debugInfo.nodeIndex);
+        return (pFrontNode ? pFrontNode->Find(p) : debugInfo.preOrderNodeIndex);
     else
-        return (pBackNode ? pBackNode->Find(p) : debugInfo.nodeIndex);
+        return (pBackNode ? pBackNode->Find(p) : debugInfo.preOrderNodeIndex);
 }
 
 // this renders *front to back* (closest walls first), and also performs backface culling
@@ -187,8 +207,6 @@ BspTree::BspTree():
     numNodes{0},
     pRootNode(nullptr)
 {
-    static_assert((Serializer::Fixed::Unfixed(SerNullNode) > 10000.0f) || (Serializer::Fixed::Unfixed(SerNullNode) < -10000.0f),
-                  "aliasing problem with SerNullNode and a node's (double) coordinate");
 }
 
 void BspTree::ProcessWalls(const std::vector<Wall>& walls, const std::vector<Line>& sectionBounds)
@@ -223,7 +241,7 @@ void BspTree::Print()
 
 void BspTree::ExportPrint()
 {
-    cout << "const unsigned char /*PROGMEM*/ bspTreeBin[] =" << endl;
+    cout << "const unsigned char bspTreeBin[] PROGMEM =" << endl;
     cout << "{" << endl;
     ExportPrintNode(pRootNode);
     cout << "};" << endl;
@@ -372,22 +390,11 @@ size_t BspTree::FindBestSplitterWallIndex(const vector<Wall>& walls)
 
 std::unique_ptr<BspTree::BspNode> BspTree::ParseNode(const uint8_t* bytes, size_t& offset)
 {
-    std::unique_ptr<BspTree::BspNode> pNode {nullptr};
-    
-    // "peek" at the data to see whether or not there is a node there
-    int32_t identifier {Serializer::PeekInt(bytes, offset)};
-    if (identifier != SerNullNode)
-        pNode.reset(new BspNode(this, bytes, offset, numNodes++));
-    else
-        offset += 4; // make the "peek" official
-    
-    return pNode;
+    return std::unique_ptr<BspTree::BspNode>(new BspNode(this, bytes, offset, numNodes++));
 }
 
 void BspTree::ExportPrintNode(const std::unique_ptr<BspTree::BspNode>& pNode)
 {
     if (pNode)
         pNode->ExportPrint();
-    else
-        cout << Serializer::Ser(SerNullNode) << endl;
 }

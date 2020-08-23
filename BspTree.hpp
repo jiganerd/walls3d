@@ -23,13 +23,18 @@
 class BspTree
 {
 public:
+    using NodeIdx = uint32_t;
+
     class BspNodeDebugInfo
     {
     public:
-        BspNodeDebugInfo(uint32_t nodeIndex);
+        BspNodeDebugInfo(uint32_t preOrderNodeIndex);
         void ExtendMapLineToSectionBounds(const Line& line, const std::vector<Line>& sectionBounds);
         
-        uint32_t nodeIndex;
+		// must follow rules for preorder tree traversal (root, back, front) in order
+		// to satisfy system for tree serialization
+        NodeIdx preOrderNodeIndex;
+
         Color mapColor;
         bool extendedLinesValid;
         Line extendedLineForMapDrawingForward;
@@ -43,14 +48,14 @@ private:
     {
     public:
         BspNode(BspTree* pOwnerTree, const Wall& wall, const std::vector<Wall>& surroundingWalls,
-                const std::vector<Line>& sectionBounds, uint32_t index);
-        BspNode(BspTree* pOwnerTree, const uint8_t* bytes, size_t& offset, uint32_t index);
+                const std::vector<Line>& sectionBounds, NodeIdx index);
+        BspNode(BspTree* pOwnerTree, const uint8_t* bytes, size_t& offset, NodeIdx index);
         ~BspNode() = default;
         
-        uint32_t GetIndex() { return debugInfo.nodeIndex; }
+        NodeIdx GetIndex() { return debugInfo.preOrderNodeIndex; }
         void Print();
         void ExportPrint();
-        int32_t Find(const Vec2& p);
+        NodeIdx Find(const Vec2& p);
         void TraverseRender(const Vec2& cameraLoc, TraversalCbType renderFunc);
         void TraverseDebug(TraversalCbType debugFunc);
 
@@ -60,6 +65,13 @@ private:
         BspTree* pOwnerTree;
         Wall wall;
         BspNodeDebugInfo debugInfo;
+        
+        // these are filled in only for reading serialized data - they should not be
+        // read/used anywhere (a waste of memory, but easier for deserialization in this
+        // class's constructor)
+        NodeIdx backNodeIdx;
+        NodeIdx frontNodeIdx;
+
         std::unique_ptr<BspNode> pBackNode;
         std::unique_ptr<BspNode> pFrontNode;
     };
@@ -82,10 +94,10 @@ private:
     std::unique_ptr<BspNode> CreateNode(const std::vector<Wall>& walls, const std::vector<Line>& sectionBounds);
     static void SplitWalls(const Line& splitterLine, const std::vector<Wall>& walls, std::vector<Wall>& backWalls, std::vector<Wall>& frontWalls);
     static size_t FindBestSplitterWallIndex(const std::vector<Wall>& walls);
-    
+
     // for loading from a binary
     std::unique_ptr<BspNode> ParseNode(const uint8_t* bytes, size_t& offset);
-    
+
     void ExportPrintNode(const std::unique_ptr<BspNode>& pNode);
     
     uint32_t numNodes;
@@ -93,10 +105,8 @@ private:
 
     static const std::vector<Color> mapColors;
     
-    // this value represents a "null node" in the serialized data, and is chosen to
-    // not conflict with any reasonable value for what is otherwise a fixed-point
-    // representation of an x coordinate in the case of a "real" node
-    static constexpr int32_t SerNullNode {static_cast<int32_t>(0x7FFFFFFF)};
+    // this value represents a "null node" in the serialized data
+    static constexpr NodeIdx NullNodeIdx{static_cast<NodeIdx>(-1)};
 };
 
 #endif /* BspTree_hpp */
